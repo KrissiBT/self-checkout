@@ -1,0 +1,15 @@
+@import "common.css";
+
+#borrow
+{
+    position: absolute;
+    left: 485px;
+    top: 500px;
+}
+
+#return
+{
+    position: absolute;
+    left: 1171px;
+    top: 500px;
+}

@@ -1,0 +1,24 @@
+@import "common.css";
+
+#terms-title
+{
+    position: absolute;
+    top: 100px;
+}
+
+#terms
+{
+    position: absolute;
+    width: 950px;
+    height: 720px;
+    left: 485px;
+    top: 200px;
+    overflow: scroll;
+}
+
+#close
+{
+    position: absolute;
+    top: 960px;
+    left: 827px;
+}

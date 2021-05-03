@@ -1,6 +1,7 @@
 @import "grid.css";
 
-@font-face {
+@font-face
+{
     font-family: 'Lexend-Exa';
     src: url('../fonts/lexendexa-regular-webfont.woff2') format('woff2'),
          url('../fonts/ lexendexa-regular-webfont.woff') format('woff');
@@ -8,7 +9,8 @@
     font-style: normal;
 }
 
-@font-face {
+@font-face
+{
     font-family: 'Lexend-Deca';
     src: url('../fonts/lexenddeca-regular-webfont.woff2') format('woff2'),
          url('../fonts/lexenddeca-regular-webfont.woff') format('woff');
@@ -37,7 +39,8 @@ body
 
 /* Background */
 
-div.top-background {
+div.top-background
+{
     position: absolute;
     width: 986px;
     height: 200px;
@@ -47,7 +50,8 @@ div.top-background {
     background: #C4C4C4;
 }
 
-div.bottom-background {
+div.bottom-background
+{
     position: absolute;
     width: 501px;
     height: 100px;
@@ -57,88 +61,70 @@ div.bottom-background {
     background: #C4C4C4;
 }
 
-.header {
+.header
+{
     height: 200px;
     width: 1920px;
 }
 
+.header.small
+{
+    height: 100px;
+}
+
 .header .language
 {
-    font-size: 16px;
-
-    /* identical to box height, or 375% */
-    display: flex;
-    align-items: center;
-
-    color: #1E1B73;
-}
-
-#language-box
-{
     position: absolute;
-    width: 53px;
-    height: 60px;
-    left: 30px;
-    top: 0px;
-}
-
-#language-box .flag
-{
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    left: 33px;
-    top: 20px;
-
-    background: url(img/united-kingdom.png);
-}
-
-#language-box .language
-{
-    position: relative;
-    width: 23px;
-    height: 60px;
-    left: 10px;
-    top: 0px;
-
-    font-family: Lexend-Deca;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 16px;
-
-    /* identical to box height, or 375% */
-    display: flex;
-    align-items: center;
-
-    color: #1E1B73;
-}
-
-
-#log-out
-{
-    position: absolute;
-    width: 52px;
+    width: 50px;
     height: 26px;
-    left: 1172px;
-    top: 17px;
+    left: 30px;
+    top: 30px;
+    line-height: 26px;
 
     font-family: Lexend-Deca;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 12px;
-
+    font-size: 16px;
     color: #1E1B73;
+
+    background-image: url(../img/united-kingdom.png);
+    background-repeat: no-repeat;
+    background-position: right;
 }
 
-#log-out .text
-{
 
+.header .logout
+{
+    position: absolute;
+    width: 80px;
+    height: 26px;
+    left: 1810px;
+    top: 30px;
+
+    font-family: Lexend-Deca;
+    font-size: 12px;
+    line-height: 26px;
+
+    color: #1E1B73;
+    background-image: url("../img/user.png");
+    background-repeat: no-repeat;
+    background-position: left;
+    padding-left: 28px;
+}
+
+.header .logout:hover
+{
+    color: #5A20BB;
+    cursor: pointer;
 }
 
 a
 {
     text-decoration-line: underline;
     color: #5A20BB;
+}
+
+.link
+{
+     color: #5A20BB;
 }
 
 .title
@@ -174,19 +160,13 @@ a
     line-height: 80px;
     font-size: 30px;
     vertical-align: middle;
+
+    text-decoration: none;
 }
 
 .rounded-button:hover
 {
     cursor: pointer;
-}
-
-.rounded-button.white
-{
-    background: #FFFFFF;
-    color: #1E1B73;
-    border: 3px solid #1E1B73;
-    color: #FFFFFF;
 }
 
 .rounded-button.pink
@@ -200,36 +180,42 @@ a
     background: #1E1B73;
     color: #FFFFFF;
 }
-
-.hollow-button
+.rounded-button.blue:hover
 {
-    margin-block-start: 0px;
-    margin-top: 0px;
-    box-sizing: border-box;
-    border-radius: 40px;
+    background: #5A20BB;
+}
 
+.rounded-button.hollow-blue
+{
+    height: 70px;
+    line-height: 70px;
+    border: 5px solid #1E1B73;
     background: #FFFFFF;
     color: #1E1B73;
-
-    line-height: 80px;
-    font-size: 30px;
-    vertical-align: middle;
 }
 
-.hollow-button.blue
+.rounded-button.hollow-blue:hover
 {
-    border: 3px solid #5A20BB;
-    color: #FFFFFF;
+    border: 5px solid #5A20BB;
+    color: #5A20BB;
 }
 
-.hollow-button.green
+.rounded-button.hollow-green
 {
+    height: 70px;
+    line-height: 70px;
     border: 5px solid #05F172;
+    background: #FFFFFF;
+    color: #000000;
 }
 
-.hollow-button.grey
+.rounded-button.hollow-grey
 {
+    height: 70px;
+    line-height: 70px;
     border: 5px solid #D8D8D8;
+    background: #FFFFFF;
+    color: #000000;
 }
 
 label
@@ -275,6 +261,15 @@ input:focus
     top: 980px;
 }
 
+.footer.gray
+{
+    height: 120px;
+    top: 960px;
+    background-color: #F1F1F1;
+    display: flex;
+    align-items: center;
+}
+
 .footer p
 {
     background: #F1F1F1;
@@ -286,15 +281,25 @@ input:focus
 
 .footer .go-back
 {
+    position: absolute;
+    left: 162px;
+    padding-left: 40px;
     color: #1E1B73;
     font-size: 20px;
     line-height: 20px;
+
+    background-image: url('../img/Arrow.png');
+    background-position: left;
+    background-repeat: no-repeat;
 }
 
 .footer .rounded-button
 {
+    position: absolute;
+    left: 1492px;
     background: #1E1B73;
 
-    box-shadow: 0px 2px 10px rgba(101, 192, 237, 0.5);
     border-radius: 30px;
+    height: 60px;
+    line-height: 60px;
 }

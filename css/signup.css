@@ -1,0 +1,24 @@
+@import "common.css";
+
+#continue
+{
+    position: absolute;
+    left: 1492px;
+    top: 900px;
+}
+
+#cancel
+{
+    position: absolute;
+    left: 1186px;
+    top: 900px;
+}
+
+#qr-code
+{
+    position: absolute;
+    width: 227px;
+    height: 227px;
+    left: 1319px;
+    top: 506px;
+}
