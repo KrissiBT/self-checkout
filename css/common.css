@@ -1,0 +1,300 @@
+@import "grid.css";
+
+@font-face {
+    font-family: 'Lexend-Exa';
+    src: url('../fonts/lexendexa-regular-webfont.woff2') format('woff2'),
+         url('../fonts/ lexendexa-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Lexend-Deca';
+    src: url('../fonts/lexenddeca-regular-webfont.woff2') format('woff2'),
+         url('../fonts/lexenddeca-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+body
+{
+    width: 1920px;
+    height: 1080px;
+    margin: 0px;
+
+    font-family: Lexend-Exa;
+    font-style: normal;
+    font-weight: normal;
+    letter-spacing: 0.2px;
+
+    font-size: 20px;
+    line-height: 60px;
+
+    color: #000000;
+}
+
+
+/* Background */
+
+div.top-background {
+    position: absolute;
+    width: 986px;
+    height: 200px;
+    left: 611px;
+    top: 0px;
+
+    background: #C4C4C4;
+}
+
+div.bottom-background {
+    position: absolute;
+    width: 501px;
+    height: 100px;
+    left: 1148px;
+    top: 0px;
+
+    background: #C4C4C4;
+}
+
+.header {
+    height: 200px;
+    width: 1920px;
+}
+
+.header .language
+{
+    font-size: 16px;
+
+    /* identical to box height, or 375% */
+    display: flex;
+    align-items: center;
+
+    color: #1E1B73;
+}
+
+#language-box
+{
+    position: absolute;
+    width: 53px;
+    height: 60px;
+    left: 30px;
+    top: 0px;
+}
+
+#language-box .flag
+{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 33px;
+    top: 20px;
+
+    background: url(img/united-kingdom.png);
+}
+
+#language-box .language
+{
+    position: relative;
+    width: 23px;
+    height: 60px;
+    left: 10px;
+    top: 0px;
+
+    font-family: Lexend-Deca;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+
+    /* identical to box height, or 375% */
+    display: flex;
+    align-items: center;
+
+    color: #1E1B73;
+}
+
+
+#log-out
+{
+    position: absolute;
+    width: 52px;
+    height: 26px;
+    left: 1172px;
+    top: 17px;
+
+    font-family: Lexend-Deca;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+
+    color: #1E1B73;
+}
+
+#log-out .text
+{
+
+}
+
+a
+{
+    text-decoration-line: underline;
+    color: #5A20BB;
+}
+
+.title
+{
+    font-size: 40px;
+    text-align: center;
+    width: 100%;
+    height: 60px;
+}
+
+.section-title
+{
+    font-size: 40px;
+    text-align: left;
+    margin-left: 8px;
+    width: 100%;
+    height: 60px;
+}
+
+.rounded-button
+{
+    /* Button */
+    box-shadow: 0px 2px 10px rgba(101, 192, 237, 0.5);
+    border-radius: 40px;
+    font-family: Lexend-Deca;
+
+    width: 266px;
+    height: 80px;
+
+    text-align: center;
+    margin-block-start: 0px;
+    margin-top: 0px;
+    line-height: 80px;
+    font-size: 30px;
+    vertical-align: middle;
+}
+
+.rounded-button:hover
+{
+    cursor: pointer;
+}
+
+.rounded-button.white
+{
+    background: #FFFFFF;
+    color: #1E1B73;
+    border: 3px solid #1E1B73;
+    color: #FFFFFF;
+}
+
+.rounded-button.pink
+{
+    background: #C7528E;
+    color: #FFFFFF;
+}
+
+.rounded-button.blue
+{
+    background: #1E1B73;
+    color: #FFFFFF;
+}
+
+.hollow-button
+{
+    margin-block-start: 0px;
+    margin-top: 0px;
+    box-sizing: border-box;
+    border-radius: 40px;
+
+    background: #FFFFFF;
+    color: #1E1B73;
+
+    line-height: 80px;
+    font-size: 30px;
+    vertical-align: middle;
+}
+
+.hollow-button.blue
+{
+    border: 3px solid #5A20BB;
+    color: #FFFFFF;
+}
+
+.hollow-button.green
+{
+    border: 5px solid #05F172;
+}
+
+.hollow-button.grey
+{
+    border: 5px solid #D8D8D8;
+}
+
+label
+{
+    font-family: Lexend-Deca;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 20px;
+    line-height: 60px;
+}
+
+input
+{
+    font-family: Lexend-Exa;
+    margin-block-start: 0px;
+    margin-top: 0px;
+    box-sizing: border-box;
+    border-radius: 40px;
+
+    width: 100%;
+    height: 80px;
+
+    border: 5px solid #1E1B73;
+    background: #FFFFFF;
+
+    padding: 8px 40px 8px 40px;
+    line-height: 80px;
+    font-size: 30px;
+    vertical-align: middle;
+    color: #000000;
+}
+
+input:focus
+{
+    outline: none;
+    border: 5px solid #5A20BB;
+}
+
+.footer {
+    position: absolute;
+    width: 1920px;
+    height: 100px;
+    top: 980px;
+}
+
+.footer p
+{
+    background: #F1F1F1;
+    line-height: 20px;
+    font-size: 60px;
+    letter-spacing: 0.2px;
+    color: #000000;
+}
+
+.footer .go-back
+{
+    color: #1E1B73;
+    font-size: 20px;
+    line-height: 20px;
+}
+
+.footer .rounded-button
+{
+    background: #1E1B73;
+
+    box-shadow: 0px 2px 10px rgba(101, 192, 237, 0.5);
+    border-radius: 30px;
+}

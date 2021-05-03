@@ -1,0 +1,35 @@
+@import "common.css";
+
+#content
+{
+    position: absolute;
+    left: 1132px;
+    width: 628px;
+    top: 200px;
+}
+
+#terms
+{
+    height: 35px;
+
+    top: 945px;
+
+    line-height: 35px;
+    font-size: 16px;
+}
+
+#terms a
+{
+    font-size: 16px;
+}
+
+#login
+{
+    top: 422px;
+}
+
+#continue
+{
+    top: 838px;
+    left: 1492px;
+}

@@ -1,0 +1,30 @@
+@import "common.css";
+
+#myturn-logo
+{
+    position: absolute;
+    width: 114px;
+    height: 114px;
+    left: 175px;
+    top: 857px;
+}
+
+#munasafn-logo
+{
+    position: absolute;
+    width: 142px;
+    height: 142px;
+    left: 323px;
+    top: 843px;
+}
+
+#start-button
+{
+    top: 900px;
+}
+
+#quote
+{
+    font-size: 16px;
+    font-family: Lexend Deca;
+}
