@@ -1,9 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style type="text/javascript" src="js/api.js"> </style>
+<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="js/kiosk.js"></script>
+<script type="text/javascript" src="js/main.js"> </script>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+<script type="text/javascript">
+    var tKiosk = initKopaKiosk();
+
+    const login = () => {
+        let tNextPage = "oops";
+        tKiosk.login($("#kennitala").val(), $("#password").val())
+            .then(response => {
+                if (response.ok){
+                    console.log("response is OK");
+                    return response.json().then(
+                        data => {
+                            Kiosk._storeVar('token', data['access_token']);
+                            tNextPage = "main";
+                        })
+                }
+                else
+                {
+                    throw -1;
+                }
+            })
+            .catch(error => {
+                console.log("response is not OK");
+                //tError = response.status;
+            })
+            .finally((info) => {
+                window.open(tNextPage + ".html", name="_self");
+            });
+    }
+</script>
 
 <!-- Edit the css sheet specific to this page, which you can create from
     css/template.css -->
@@ -14,7 +45,7 @@
 
 <body>
 <div class="header"><div class="top-background"></div></div>
-<div class="in-grid left-col8 width-col4"><div class="section-title">Reset Password</div></div><br/>
+<div class="in-grid left-col8 width-col4"><div class="section-title">Log in</div></div><br/>
 <p class="in-grid left-col8 width-col4">Not a member? <a href="signup.html">Sign up</a></p>
 <form class="in-grid left-col8 width-col4" id="login">
     <label for="kennitala">Kennitala</label><br/>
@@ -22,8 +53,9 @@
     <label for="password">Password</label><br/>
     <input type="password" name="password" id="password" /><br/>
 </form>
+<div id="forgot" class="in-grid left-col8 width-col4"><a href="reset.html">Forgot password?</a></div>
 
-<div class="rounded-button blue" id="continue">Continue</div>
+<div class="rounded-button blue" id="continue" onclick="login()">Continue</div>
 
 <div id="terms" class="in-grid left-col8 width-col4">By clicking "Continue" I accept the <a href="terms.html">Terms and Conditions</a></div>
 
