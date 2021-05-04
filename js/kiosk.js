@@ -1,45 +1,72 @@
 /* Kiosk Javascript library */
 
-function requestHeaders(token='')
+function fetchParams(pMethod, token='', data={})
 {
-    let t_headers = {'Content-Type': 'application/json'};
+    let tParams = {
+        'method': pMethod, // *GET, POST, PUT, DELETE, etc.
+        'credentials': 'same-origin',
+        'referrerPolicy': 'origin',
+        "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    }
+
+    let tHeaders = {};
+    if (pMethod == "POST" && data != {})
+    {
+        tHeaders['Content-Type'] = 'application/json';
+        tParams['body'] = JSON.stringify(data); // body data type must match "Content-Type" header
+    }
+    else
+    {
+         tHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+    }
 
     if (token != '')
     {
-        t_headers["authorisation"] = "Bearer " + token;
+        tHeaders["Authorization"] = "Bearer " + token;
     }
 
-    return t_headers;
+    if (tHeaders != {})
+    {
+        tParams['headers'] = tHeaders;
+    }
+
+    console.log("fetchParams:");
+    console.log(tParams);
+    return tParams;
 }
 
-function fetchParams(pMethod, token='', data={})
-{
-    console.log(data);
-    return {
-        'method': pMethod, // *GET, POST, PUT, DELETE, etc.
-        'headers': requestHeaders(token),
-        'body': JSON.stringify(data) // body data type must match "Content-Type" header
-    };
-}
-
-async function getData(url = '', token='')
+function getData(url = '', token='', params={})
 {
     // Default options are marked with *
-    return await fetch(url, fetchParams('POSGETT', token));
+    console.log("getData");
+    let paramCount = 0;
+    for (key in params) {
+        if (paramCount == 0){url += "?";}
+        else {url += "&";}
+
+        url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+    }
+    console.log("URL: " + url);
+    return fetch(url, fetchParams('GET', token));
 }
 
 // Example POST method implementation:
 function postData(url = '', data={}, token='') {
     // Default options are marked with *
     console.log("postData");
-    let s = fetch(url, fetchParams('POST', token, data));
-    console.log("fetch terminated");
-    return s;
+    return fetch(url, fetchParams('POST', token, data));
 }
 
 function storeToken(pToken)
 {
     window.sessionStorage.setItem()
+}
+
+function isEmpty(pObject)
+{
+    for (i in pObject)
+        return false;
+    return true;
 }
 class Kiosk
 {
@@ -50,9 +77,12 @@ class Kiosk
 
     static getSessionKiosk(pURL)
     {
-        let tKiosk = new Kiosk(pURL, Kiosk._fetchVar('token'));
+        if (isEmpty(Kiosk._session))
+        {
+            Kiosk._session = new Kiosk(pURL, Kiosk._fetchVar('token'));
+        }
 
-        return tKiosk
+        return Kiosk._session;
     }
 
     static setToken(pToken)
@@ -75,13 +105,19 @@ class Kiosk
         return this._url + "/" + pAPI;
     }
 
-    login(pUsername, pPassword, pSuccess, pFailure)
+    login(pUsername, pPassword)
     {
-        let tError = "";
-        let tToken = "";
+        //pUsername = "snouat";
+        //pPassword = "T0ol!Plusvite!";
 
         return postData(this._endPointURL("api/login"),
                 {"username": pUsername, "password": pPassword});
+    }
+
+    getReservations()
+    {
+        return getData(this._endPointURL("api/v1.1/reservations"),
+            this._token);
     }
 
     lastError()

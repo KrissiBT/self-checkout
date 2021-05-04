@@ -1,6 +1,6 @@
 const kKopaKioskURL = "https://kopakioskprototype.myturn.com/library";
 
-function goToPage(pPage)
+function UIGoToPage(pPage)
 {
     window.open(pPage + ".html", name="_self");
 }
@@ -11,13 +11,12 @@ function initKopaKiosk() {
 
 function UILogout()
 {
-    console.log("soeunfo");
     initKopaKiosk().logout()
         .then(() => {
-            goToPage("index");
+            UIGoToPage("index");
         },
         () => {
-            goToPage("oops");
+            UIGoToPage("oops");
         });
 }
 

@@ -6,12 +6,41 @@
 <script type="text/javascript" src="js/main.js"> </script>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
+<script type="text/javascript">
+    let kiosk = initKopaKiosk();
+
+    kiosk.getReservations()
+        .then( response => {
+            if (response.ok)
+            {
+                console.log("reservation found");
+            }
+            else if (response.status == 404)
+            {
+                console.log("reservation not found");
+                // Nothing to return, only show borrow button
+                document.getElementById("return").remove();
+            }
+            else
+            {
+                throw response.statusText;
+            }
+
+            document.getElementById("buttons").style.visibility = "visible";
+
+        })
+        .catch(info => {
+            console.log("error");
+            console.log (info);
+            UIGoToPage("oops");
+        });
+</script>
 
 <!-- Edit the css sheet specific to this page, which you can create from
     css/template.css -->
 <link rel="stylesheet" href="css/main.css" type="text/css">
 
-<title>Borrow / Return</title>
+<title>Main</title>
 </head>
 
 <body>
@@ -21,9 +50,10 @@
     <div class="logout" id="header-logout">Log out</div>
 </div>
 
+<div id="buttons">
 <a href="borrow.html" id="borrow" class="rounded-button blue">Borrow</a>
 <a href="return.html" id="return" class="rounded-button pink">Return</a>
-
+</div>
 <!-- Might not be necesssary -->
 <div class="footer"><div class="bottom-background"></div></div>
 
