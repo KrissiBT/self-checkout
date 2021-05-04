@@ -34,3 +34,10 @@
     top: 838px;
     left: 1492px;
 }
+
+#forgot
+{
+    position: absolute;
+    top: 710px;
+    text-align: right;
+}
