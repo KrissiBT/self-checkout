@@ -7,7 +7,7 @@
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
 <script type="text/javascript">
-    var tKiosk = initKopaKiosk();
+    let tKiosk = initKopaKiosk();
 
     const login = () => {
         let tNextPage = "oops";
@@ -21,14 +21,19 @@
                             tNextPage = "main";
                         })
                 }
+                else if (response.status == 400 || response.status == 401)
+                {
+                    // Login failure, reload the login page
+                    tNextPage = "login";
+                }
                 else
                 {
+                    console.log(response);
                     throw -1;
                 }
             })
             .catch(error => {
                 console.log("response is not OK");
-                //tError = response.status;
             })
             .finally((info) => {
                 window.open(tNextPage + ".html", name="_self");
