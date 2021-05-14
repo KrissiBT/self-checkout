@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="js/kiosk.js"></script>
+<script type="text/javascript" src="js/main.js"> </script>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<link rel="stylesheet" href="css/borrow.css" type="text/css">
+<link rel="shortcut icon" href="#">
+
+<title>Borrow</title>
+
+<script type="text/javascript">
+    addLoadEvent(function() {
+        if (typeof(existing) == "function")
+        {
+            existing();
+        }
+
+        let kiosk = initKopaKiosk();
+        let tList = new itemList("itemlist");
+
+        kiosk.listItems()
+            .then(pItems => {
+                if (pItems.length == 0)
+                {
+                    tList.showEmpty();
+                }
+                else
+                {
+                    let tItem;
+                    for (tItem of pItems)
+                    {
+                        tList.addItem(tItem);
+                    }
+                }
+            })
+            .catch(error =>
+            {
+                tList.showError(error);
+            });
+    });
+</script>
+</head>
+
+<body>
+<div class="small header">
+    <div class="language">EN</div>
+    <div class="logout" id="header-logout">Log out</div>
+</div>
+<div class="content">
+    <div class="title">Borrow</div>
+    <div id="itemlist"></div>
+</div>
+
+
+<!-- Might not be necesssary -->
+<div class="footer gray">
+    <a href="main.html" class="go-back">Go back</a>
+    <div class="rounded-button blue">Continue</div>
+</div>
+
+</body>
+
+</html> 
