@@ -120,6 +120,63 @@ class Kiosk
             this._token);
     }
 
+    getCarts()
+    {
+        return getData(this._endPointURL("api/v1.1/self-checkout/carts"),
+            this._token);
+    }
+
+    createCart()
+    {
+        return postData(this._endPointURL("api/v1.1/self-checkout/carts"), 
+            this._token);
+    }
+
+    listItems(availableOnly = true)
+    {
+        return getData(this._endPointURL("api/v1.1/items"), this._token)
+            .then(response => {
+                if (response.ok)
+                {
+                    console.log("items returned a positive reply")
+                    return response.json();
+                }
+                else
+                {
+                    console.log("listItems returned " + response.status);
+                    
+                    if (response.status == 404)
+                    {
+                        return [];
+                    }
+                    else
+                    {
+                        response.text()
+                            .then(text => {
+                                throw text;
+                            },
+                            error => {
+                                throw error;
+                            });
+                    }
+                }
+            })
+            .then(pJson => {
+                let tItems = [];
+                let tItem;
+                for (tItem of pJson)
+                {
+                    if (!availableOnly || tItem['availableForCheckout'])
+                    {
+                        tItems.push(tItem);
+                    }
+                }
+
+                console.log("JSON ready");
+                return tItems;
+            });
+    }
+
     lastError()
     {
         return this._lastError;
