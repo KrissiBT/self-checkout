@@ -34,6 +34,7 @@ body
     line-height: 60px;
 
     color: #000000;
+    background-color: #FAFAFB;
 }
 
 
@@ -259,6 +260,8 @@ input:focus
     width: 1920px;
     height: 100px;
     top: 980px;
+    display: flex;
+    align-items: center;
 }
 
 .footer.gray
@@ -281,8 +284,7 @@ input:focus
 
 .footer .go-back
 {
-    position: absolute;
-    left: 162px;
+    margin-left: 162px;
     padding-left: 40px;
     color: #1E1B73;
     font-size: 20px;
@@ -291,6 +293,13 @@ input:focus
     background-image: url('../img/Arrow.png');
     background-position: left;
     background-repeat: no-repeat;
+
+    text-decoration: none;
+}
+
+.footer .go-back:hover
+{
+    cursor: pointer;
 }
 
 .footer .rounded-button
