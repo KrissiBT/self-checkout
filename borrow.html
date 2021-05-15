@@ -13,14 +13,9 @@
 
 <script type="text/javascript">
     addLoadEvent(function() {
-        if (typeof(existing) == "function")
-        {
-            existing();
-        }
-
         let kiosk = initKopaKiosk();
-        let tList = new itemList("itemlist");
-
+        let tList = itemList.createEmptyList("itemlist", "selected", "grid");
+        
         kiosk.listItems()
             .then(pItems => {
                 if (pItems.length == 0)
@@ -41,6 +36,7 @@
                 tList.showError(error);
             });
     });
+
 </script>
 </head>
 
@@ -55,10 +51,10 @@
 </div>
 
 
-<!-- Might not be necesssary -->
 <div class="footer gray">
     <a href="main.html" class="go-back">Go back</a>
-    <div class="rounded-button blue">Continue</div>
+    <div id="selected">0 selected</div>
+    <a href="borrow_confirm.html" class="rounded-button blue">Continue</div>
 </div>
 
 </body>
