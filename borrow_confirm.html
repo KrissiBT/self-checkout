@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="js/kiosk.js"></script>
+<script type="text/javascript" src="js/main.js"> </script>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<link rel="stylesheet" href="css/borrow_confirm.css" type="text/css">
+<link rel="shortcut icon" href="#">
+
+<title>Borrow</title>
+
+<script type="text/javascript">
+    addLoadEvent(function() {
+        let kiosk = initKopaKiosk();
+
+        let tItemList = itemList.createListFromSavedSelection("itemList", 
+                    "selected", "list");
+    });
+
+</script>
+</head>
+
+<body>
+<div class="small header">
+    <div class="language">EN</div>
+    <div class="logout" id="header-logout">Log out</div>
+</div>
+<div class="content">
+    <div class="title">Borrow</div>
+    <div id="selected"></div>
+    <div id="itemList" class="rounded-list"></div>
+</div>
+
+<div class="footer gray">
+    <a href="borrow.html" class="go-back">Go back</a>
+    <a href="pick_up.html" class="rounded-button blue">Continue</a>
+</div>
+
+</body>
+
+</html> 
