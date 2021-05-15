@@ -36,13 +36,12 @@
                 console.log("response is not OK");
             })
             .finally((info) => {
+                itemList.clearSelection();
                 window.open(tNextPage + ".html", name="_self");
             });
     }
 </script>
 
-<!-- Edit the css sheet specific to this page, which you can create from
-    css/template.css -->
 <link rel="stylesheet" href="css/login.css" type="text/css">
 
 <title>Log in</title>
@@ -64,7 +63,6 @@
 
 <div id="terms" class="in-grid left-col8 width-col4">By clicking "Continue" I accept the <a href="terms.html">Terms and Conditions</a></div>
 
-<!-- Might not be necesssary -->
 <div class="footer"><div class="bottom-background"></div></div>
 
 </body>
