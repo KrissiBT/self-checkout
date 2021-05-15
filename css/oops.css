@@ -1,0 +1,33 @@
+@import "common.css";
+
+.title
+{
+    font-size: 60px;
+    line-height: 60px;
+    text-align: center;
+
+    width: 100%;
+    position: absolute;
+
+    top: 266px;
+}
+
+.subtitle
+{
+    position: absolute;
+    width: 100%;
+    top: 380px;
+
+    font-size: 40px;
+    line-height: 60px;
+    text-align: center;
+}
+
+#back
+{
+    position: absolute;
+    top: 750px;
+    left: 827px;
+
+    display: block;
+}
