@@ -18,7 +18,7 @@
                     return response.json().then(
                         data => {
                             Kiosk._storeVar('token', data['access_token']);
-                            tNextPage = "main";
+                            tNextPage = "home";
                         })
                 }
                 else if (response.status == 400 || response.status == 401)
