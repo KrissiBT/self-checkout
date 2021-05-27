@@ -9,31 +9,26 @@
 <script type="text/javascript">
     let kiosk = initKopaKiosk();
 
-    kiosk.getReservations()
-        .then( response => {
-            if (response.ok)
-            {
-                console.log("reservation found");
-            }
-            else if (response.status == 404)
-            {
-                console.log("reservation not found");
-                // Nothing to return, only show borrow button
-                document.getElementById("return").remove();
-            }
-            else
-            {
-                throw response.statusText;
-            }
+    addLoadEvent(
+        function ()
+        {
+            kiosk.userHasLoans()
+                .then(pHasLoans => {
+                    if (!pHasLoans)
+                    {
+                        // Nothing to return, only show borrow button
+                        document.getElementById("return").remove();
+                    }
 
-            document.getElementById("buttons").style.visibility = "visible";
-
-        })
-        .catch(info => {
-            console.log("error");
-            console.log (info);
-            UIGoToPage("oops");
-        });
+                    document.getElementById("buttons").style.visibility = "visible";
+                })
+                .catch(info => {
+                    console.log("error");
+                    console.log (info);
+                    //UIGoToPage("oops");
+                });
+        }
+    );
 </script>
 
 <!-- Edit the css sheet specific to this page, which you can create from

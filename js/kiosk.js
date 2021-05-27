@@ -35,12 +35,12 @@ function fetchParams(pMethod, token='', data={})
     return tParams;
 }
 
-function getData(url = '', token='', params={})
+function getData(url = '', token = '', params = {})
 {
     // Default options are marked with *
     console.log("getData");
     let paramCount = 0;
-    for (key in params) {
+    for (let key in params) {
         if (paramCount == 0){url += "?";}
         else {url += "&";}
 
@@ -51,29 +51,29 @@ function getData(url = '', token='', params={})
 }
 
 // Example POST method implementation:
-function postData(url = '', data={}, token='') {
+function postData(url = '', data = {}, token = '') {
     // Default options are marked with *
     console.log("postData");
     return fetch(url, fetchParams('POST', token, data));
 }
 
-function storeToken(pToken)
-{
-    window.sessionStorage.setItem()
-}
-
 function isEmpty(pObject)
 {
-    for (i in pObject)
+    for (let i in pObject)
+    {
         return false;
+    }
     return true;
 }
+
 class Kiosk
 {
     constructor(pURL, pToken){
         this._token = pToken;
         this._url = pURL;
     }
+
+    static kSessKeyCartID = 'myturn.kiosk.activecartid';
 
     static getSessionKiosk(pURL)
     {
@@ -105,36 +105,176 @@ class Kiosk
         return this._url + "/" + pAPI;
     }
 
+    _getRequest(pApi)
+    {
+        return getData(this._endPointURL(pApi), this._token);
+    }
+
+    _postRequest(pApi, pData={}, pNeedToken=true)
+    {
+        if (pNeedToken)
+        {
+            return postData(this._endPointURL(pApi), pData, this._token);
+        }
+        else
+        {
+            return postData(this._endPointURL(pApi), pData);
+        }
+    }
+    
+
     login(pUsername, pPassword)
     {
-        //pUsername = "snouat";
-        //pPassword = "T0ol!Plusvite!";
-
-        return postData(this._endPointURL("api/login"),
-                {"username": pUsername, "password": pPassword});
+        return this._postRequest("api/login",
+                {"username": pUsername, "password": pPassword}, false);
     }
 
     getReservations()
     {
-        return getData(this._endPointURL("api/v1.1/reservations"),
-            this._token);
+        return this._getRequest("api/v1.1/reservations");
     }
 
-    getCarts()
+    loadCart()
     {
-        return getData(this._endPointURL("api/v1.1/self-checkout/carts"),
-            this._token);
+        return this._getRequest("api/v1.1/self-checkout/carts")
+            .then(response => {
+                if (response.ok)
+                {
+                    return response.json()
+                        .then(pCarts => {
+                            if (pCarts.length > 0)
+                            {
+                                console.log("cart found");
+                                if ("id" in pCarts[0])
+                                {
+                                    this.setCurrentCartID(pCarts[0]["id"]);
+                                }
+                                else
+                                {
+                                    this.setCurrentCartID("");
+                                }
+                            }
+                            else
+                            {
+                                console.log("no 404, but no cart. Creating one");
+                                return this.createCart();
+                            }
+                        });
+                }
+                else if (response.status == 404)
+                {
+                    console.log("no cart found, creating one");
+                    return this.createCart();
+                }
+                else
+                {
+                    throw response.statusText;
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                throw error;
+            });
     }
 
+    // Create a cart and return the ID
     createCart()
     {
-        return postData(this._endPointURL("api/v1.1/self-checkout/carts"), 
-            this._token);
+        return this._postRequest("api/v1.1/self-checkout/carts")
+            .then(response => {
+                return response.json()
+                        .then(pCart => {
+                            this.setCurrentCartID(pCart["id"]);
+                        });
+            })
+            .catch(error => {
+                console.log("createCart error");
+                console.log(error);
+            });
     }
 
-    listItems(availableOnly = true)
+    getCurrentCartID(pID)
     {
-        return getData(this._endPointURL("api/v1.1/items"), this._token)
+        let tCartID = window.sessionStorage.getItem(Kiosk.kSessKeyCartID);
+
+        if (tCartID === null)
+        {
+            return "";
+        }
+        else
+        {
+            return tCartID;
+        }
+    }
+
+    setCurrentCartID(pID)
+    {
+        window.sessionStorage.setItem(Kiosk.kSessKeyCartID, pID);
+    }
+
+    _userHasLoans()
+    {
+        let tCartID = this.getCurrentCartID();
+
+        if (tCartID === null)
+        {
+            return false;
+        }
+
+        return this._getRequest("/api/v1.1/self-checkout/carts/" + tCartID)
+            .then(response => {
+                if (!response.ok)
+                {
+                    console.log("get cart content failed:" + response.statusCode);
+                    throw response.statusText;
+                }
+
+                return response.json()
+                    .then(pCartContent => {
+                        debugger;
+                        if ("outstandingLoans" in pCartContent
+                                && pCartContent.outstandingLoans.length > 0)
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    })
+            })
+            .catch(error => {
+                console.log("_userHasLoans");
+                console.log(error);
+
+                throw error;
+            });
+    }
+
+    userHasLoans()
+    {
+        let tCartID = this.getCurrentCartID();
+
+        if (tCartID == "")
+        {
+            return this.loadCart()
+                    .then(() => {
+                        return this._userHasLoans();
+                    })
+                    .catch(error => {
+                        console.log("userHasLoan error");
+                        console.log(error);
+                        return false;
+                    });
+        }
+        else
+        {
+            return this._userHasLoans();
+        }
+    }
+
+    // Return a list of items
+    listItems(pAvailableOnly = true)
+    {
+        return this._getRequest("api/v1.1/items")
             .then(response => {
                 if (response.ok)
                 {
@@ -163,16 +303,71 @@ class Kiosk
             })
             .then(pJson => {
                 let tItems = [];
-                let tItem;
-                for (tItem of pJson)
+                for (let tItem of pJson)
                 {
-                    if (!availableOnly || tItem['availableForCheckout'])
+                    if (!pAvailableOnly || tItem['availableForCheckout'])
                     {
                         tItems.push(tItem);
                     }
                 }
 
                 console.log("JSON ready");
+                return tItems;
+            });
+    }
+
+    // Return a list of items
+    listBorrowedItems()
+    {
+        let tCartID = window.sessionStorage.getItem(Kiosk.kSessKeyCartID);
+
+        if (tCartID === null)
+        {
+            throw 'No current cart ID defined';
+        }
+        
+        return this._getRequest("api/v1.1/carts/" + tCartID)
+            .then(response => {
+                if (response.ok)
+                {
+                    console.log("borrowed item list returned")
+                    return response.json();
+                }
+                else
+                {
+                    console.log("listBorrowedItems returned " + response.status);
+                    
+                    if (response.status == 404)
+                    {
+                        return [];
+                    }
+                    else
+                    {
+                        response.text()
+                            .then(text => {
+                                throw text;
+                            },
+                            error => {
+                                throw error;
+                            });
+                    }
+                }
+            })
+            .then(pJson => {
+                let tItems = [];
+                debugger;
+
+                if ('outstandingLoans' in pJson)
+                {
+                    for (let tItem of pJson.outstandingLoans)
+                    {
+                        tItems.push(tItem);
+                    }
+                }
+
+                console.log("JSON ready");
+                console.log(tItems);
+
                 return tItems;
             });
     }
@@ -185,7 +380,7 @@ class Kiosk
     logout()
     {
         Kiosk._storeVar('token', "");
-        return postData(this._endPointURL("api/logout"))
+        return this._postRequest("api/logout", {}, false)
             .then(data => {},
                 error =>{});
     }
