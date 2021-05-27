@@ -16,6 +16,7 @@ function UILogout()
             UIGoToPage("index");
         },
         () => {
+            debugger;
             UIGoToPage("oops");
         });
 }
@@ -64,6 +65,7 @@ class itemList
         window.sessionStorage.removeItem("selection");
     }
 
+    // pType: 'grid' or 'list'
     static createEmptyList(pTarget="", pCounterID="", pType="grid")
     {
         itemList._instance = new itemList(pTarget, pCounterID, pType);
@@ -80,6 +82,7 @@ class itemList
         return itemList._instance;
     }
 
+    // pType: 'grid' or 'list'
     static createListFromSavedSelection(pListElementID, pCounterID="", pType="grid")
     {
         let tItemList = itemList.createEmptyList(pListElementID, pCounterID, pType);
@@ -106,14 +109,19 @@ class itemList
 
     itemClicked(pID)
     {
-        if (this._selectedItems[pID])
+        if (!pID in this._selectedItems)
         {
-            delete this._selectedItems[pID];
+            return;
+        }
+
+        if (this._selectedItems.pID)
+        {
+            delete this._selectedItems.pID;
             document.getElementById(pID).classList.remove("selected");
         }
         else
         {
-            this._selectedItems[pID] = this._elements[pID];
+            this._selectedItems.pID = this._elements[pID];
             document.getElementById(pID).classList.add("selected");
         }
 

@@ -3,9 +3,9 @@
 function fetchParams(pMethod, token='', data={})
 {
     let tParams = {
-        'method': pMethod, // *GET, POST, PUT, DELETE, etc.
-        'credentials': 'same-origin',
-        'referrerPolicy': 'origin',
+        method: pMethod, // *GET, POST, PUT, DELETE, etc.
+        credentials: 'same-origin',
+        referrerPolicy: 'origin',
         "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
     }
 
@@ -13,7 +13,7 @@ function fetchParams(pMethod, token='', data={})
     if (pMethod == "POST" && data != {})
     {
         tHeaders['Content-Type'] = 'application/json';
-        tParams['body'] = JSON.stringify(data); // body data type must match "Content-Type" header
+        tParams.body = JSON.stringify(data); // body data type must match "Content-Type" header
     }
     else
     {
@@ -22,12 +22,12 @@ function fetchParams(pMethod, token='', data={})
 
     if (token != '')
     {
-        tHeaders["Authorization"] = "Bearer " + token;
+        tHeaders.Authorization = "Bearer " + token;
     }
 
     if (tHeaders != {})
     {
-        tParams['headers'] = tHeaders;
+        tParams.headers = tHeaders;
     }
 
     console.log("fetchParams:");
@@ -44,7 +44,7 @@ function getData(url = '', token = '', params = {})
         if (paramCount == 0){url += "?";}
         else {url += "&";}
 
-        url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+        url += encodeURIComponent(key) + "=" + encodeURIComponent(params.key);
     }
     console.log("URL: " + url);
     return fetch(url, fetchParams('GET', token));
@@ -147,7 +147,7 @@ class Kiosk
                                 console.log("cart found");
                                 if ("id" in pCarts[0])
                                 {
-                                    this.setCurrentCartID(pCarts[0]["id"]);
+                                    this.setCurrentCartID(pCarts[0].id);
                                 }
                                 else
                                 {
@@ -184,7 +184,10 @@ class Kiosk
             .then(response => {
                 return response.json()
                         .then(pCart => {
-                            this.setCurrentCartID(pCart["id"]);
+                            if ('id' in pCart)
+                            {
+                                this.setCurrentCartID(pCart.id);
+                            }
                         });
             })
             .catch(error => {
@@ -231,7 +234,6 @@ class Kiosk
 
                 return response.json()
                     .then(pCartContent => {
-                        debugger;
                         if ("outstandingLoans" in pCartContent
                                 && pCartContent.outstandingLoans.length > 0)
                         {
@@ -305,7 +307,7 @@ class Kiosk
                 let tItems = [];
                 for (let tItem of pJson)
                 {
-                    if (!pAvailableOnly || tItem['availableForCheckout'])
+                    if (!pAvailableOnly || tItem.availableForCheckout)
                     {
                         tItems.push(tItem);
                     }
@@ -355,7 +357,6 @@ class Kiosk
             })
             .then(pJson => {
                 let tItems = [];
-                debugger;
 
                 if ('outstandingLoans' in pJson)
                 {
