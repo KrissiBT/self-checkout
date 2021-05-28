@@ -22,3 +22,11 @@
     left: 1319px;
     top: 506px;
 }
+
+body
+{
+    background-image: url(../img/reset.png);
+    background-size: 1037px 1000px;
+    background-position: left bottom;
+    background-repeat: no-repeat;
+}

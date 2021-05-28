@@ -14,3 +14,17 @@
     position: absolute;
     top: 100px;
 }
+
+#itemlist
+{
+    position: absolute;
+    width: 1272px;
+    height: 760px;
+    left: 326px;
+    top: 200px;
+    
+    overflow: auto;
+    
+    border-radius: 5px;
+    background-color: #FFFFFF;
+}

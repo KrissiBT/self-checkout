@@ -23,6 +23,16 @@
     text-align: center;
 }
 
+#back
+{
+    position: absolute;
+    width: 407px;
+    top: 589px;
+    left: 757px;
+
+    display: block;
+}
+
 body
 {
     background-image: url(../img/errorednails.png);

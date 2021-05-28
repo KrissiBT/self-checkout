@@ -22,3 +22,11 @@
     left: 1319px;
     top: 506px;
 }
+
+body
+{
+    background-image: url(../img/signup.png);
+    background-size: 1080px 1080px;
+    background-position: left;
+    background-repeat: no-repeat;
+}

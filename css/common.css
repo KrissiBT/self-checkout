@@ -38,30 +38,6 @@ body
 }
 
 
-/* Background */
-
-div.top-background
-{
-    position: absolute;
-    width: 986px;
-    height: 200px;
-    left: 611px;
-    top: 0px;
-
-    background: #C4C4C4;
-}
-
-div.bottom-background
-{
-    position: absolute;
-    width: 501px;
-    height: 100px;
-    left: 1148px;
-    top: 0px;
-
-    background: #C4C4C4;
-}
-
 .header
 {
     height: 200px;
@@ -84,7 +60,7 @@ div.bottom-background
 
     font-family: Lexend-Deca;
     font-size: 16px;
-    color: #1E1B73;
+    color: #0E837A;
 
     background-image: url(../img/united-kingdom.png);
     background-repeat: no-repeat;
@@ -104,7 +80,7 @@ div.bottom-background
     font-size: 12px;
     line-height: 26px;
 
-    color: #1E1B73;
+    color: #0E837A;
     background-image: url("../img/user.png");
     background-repeat: no-repeat;
     background-position: left;
@@ -113,19 +89,19 @@ div.bottom-background
 
 .header .logout:hover
 {
-    color: #5A20BB;
+    color: #38c0b6;
     cursor: pointer;
 }
 
 a
 {
     text-decoration-line: underline;
-    color: #5A20BB;
+    color: ##0E837A;
 }
 
 .link
 {
-     color: #5A20BB;
+     color: ##0E837A;
 }
 
 .title
@@ -170,53 +146,41 @@ a
     cursor: pointer;
 }
 
-.rounded-button.pink
+.rounded-button.yellow
 {
-    background: #C7528E;
-    color: #FFFFFF;
+    background: #ffcb41;
+    color: #232323;
 }
 
-.rounded-button.blue
+.rounded-button.yellow:hover
 {
-    background: #1E1B73;
-    color: #FFFFFF;
-}
-.rounded-button.blue:hover
-{
-    background: #5A20BB;
+    background: #ffeec2;
 }
 
-.hollow-blue
+.rounded-button.green
 {
-    height: 70px;
-    line-height: 70px;
-    border: 5px solid #1E1B73;
-    background: #FFFFFF;
-    color: #000000;
+    background: #38c0b6;
+    color: #232323;
 }
 
-.rounded-button.hollow-blue:hover
+.rounded-button.green:hover
 {
-    border: 5px solid #5A20BB;
-    color: #5A20BB;
+    background: #c8e8e7;
 }
 
 .hollow-green
 {
     height: 70px;
     line-height: 70px;
-    border: 5px solid #05F172;
+    border: 5px solid #38C0B6;
     background: #FFFFFF;
-    color: #000000;
+    color: #232323;
 }
 
-.hollow-grey
+.hollow-green:hover
 {
-    height: 70px;
-    line-height: 70px;
-    border: 5px solid #D8D8D8;
-    background: #FFFFFF;
-    color: #000000;
+    border: 5px solid #c8e8e7;
+    color: #232323;
 }
 
 
@@ -294,20 +258,18 @@ input
     width: 100%;
     height: 80px;
 
-    border: 5px solid #1E1B73;
-    background: #FFFFFF;
-
     padding: 8px 40px 8px 40px;
     line-height: 80px;
     font-size: 30px;
     vertical-align: middle;
-    color: #000000;
+
+    background: #FFFFFFF;
 }
 
 input:focus
 {
     outline: none;
-    border: 5px solid #5A20BB;
+    border: 5px solid #c8e8e7;
 }
 
 .footer {
@@ -337,19 +299,22 @@ input:focus
     color: #000000;
 }
 
-.footer .go-back
+.footer .left-link
 {
     margin-left: 162px;
-    padding-left: 40px;
-    color: #1E1B73;
+    color: #0E837A;
     font-size: 20px;
     line-height: 20px;
 
+    text-decoration: none;
+}
+
+.footer .go-back
+{
+    padding-left: 40px;
     background-image: url('../img/Arrow.png');
     background-position: left;
     background-repeat: no-repeat;
-
-    text-decoration: none;
 }
 
 .footer .go-back:hover

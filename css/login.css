@@ -41,3 +41,11 @@
     top: 710px;
     text-align: right;
 }
+
+body
+{
+    background-image: url(../img/login.png);
+    background-size: 1080px 1000px;
+    background-repeat: no-repeat;
+    background-position: 10px 50px;
+}

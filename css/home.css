@@ -13,3 +13,11 @@
     justify-content: space-evenly;
     visibility: hidden;
 }
+
+body
+{
+    background-image: url(../img/borrowreturn.png);
+    background-size: 1800px;
+    background-position: 60px 86px;
+    background-repeat: no-repeat;
+}
