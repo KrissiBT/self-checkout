@@ -6,10 +6,35 @@
 <script type="text/javascript" src="js/main.js"> </script>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
-
-<!-- Edit the css sheet specific to this page, which you can create from
-    css/template.css -->
 <link rel="stylesheet" href="css/return.css" type="text/css">
+
+<script type="text/javascript">
+    addLoadEvent(function() {
+        let kiosk = initKopaKiosk();
+        let tList = itemList.createEmptyList("itemlist", "selected", "list");
+        
+        kiosk.listBorrowedItems()
+            .then(pItems => {
+                if (pItems.length == 0)
+                {
+                    tList.showEmpty();
+                }
+                else
+                {
+                    let tItem;
+                    for (tItem of pItems)
+                    {
+                        tList.addItem(tItem);
+                    }
+                }
+            })
+            .catch(error =>
+            {
+                tList.showError(error);
+            });
+    });
+
+</script>
 
 <title>Return</title>
 </head>
@@ -26,13 +51,10 @@
     Continue and follow the instructions
 </div>
 
-<div id="return_list">
-    
-</div> 
+<div id="itemlist"></div>
 
-<!-- Might not be necesssary -->
 <div class="footer gray">
-    <div class="go-back">Go Back</div>
+    <a href="home.html" class="go-back">Go back</a>
     <div class="rounded-button blue">Continue</div>
 </div>
 

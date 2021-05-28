@@ -33,10 +33,14 @@
                 }
             })
             .catch(error => {
+                debugger;
                 console.log("response is not OK");
             })
             .finally((info) => {
                 itemList.clearSelection();
+
+                if (tNextPage == "oops")
+                    {debugger;}
                 window.open(tNextPage + ".html", name="_self");
             });
     }
@@ -48,22 +52,21 @@
 </head>
 
 <body>
-<div class="header"><div class="top-background"></div></div>
-<div class="in-grid left-col8 width-col4"><div class="section-title">Log in</div></div><br/>
+<div class="header">
+    <div class="language">EN</div>
+</div>
 <p class="in-grid left-col8 width-col4">Not a member? <a href="signup.html">Sign up</a></p>
 <form class="in-grid left-col8 width-col4" id="login">
     <label for="kennitala">Kennitala</label><br/>
-    <input type="text" name="kennitala" id="kennitala" /><br/>
+    <input class="hollow-green" type="text" name="kennitala" id="kennitala" /><br/>
     <label for="password">Password</label><br/>
-    <input type="password" name="password" id="password" /><br/>
+    <input class="hollow-green" type="password" name="password" id="password" /><br/>
 </form>
 <div id="forgot" class="in-grid left-col8 width-col4"><a href="reset.html">Forgot password?</a></div>
 
-<div class="rounded-button blue" id="continue" onclick="login()">Continue</div>
+<div class="rounded-button green" id="continue" onclick="login()">Continue</div>
 
 <div id="terms" class="in-grid left-col8 width-col4">By clicking "Continue" I accept the <a href="terms.html">Terms and Conditions</a></div>
-
-<div class="footer"><div class="bottom-background"></div></div>
 
 </body>
 

@@ -25,14 +25,12 @@
                 .catch(info => {
                     console.log("error");
                     console.log (info);
-                    //UIGoToPage("oops");
+                    UIGoToPage("oops");
                 });
         }
     );
 </script>
 
-<!-- Edit the css sheet specific to this page, which you can create from
-    css/template.css -->
 <link rel="stylesheet" href="css/home.css" type="text/css">
 
 <title>Home</title>
@@ -41,16 +39,13 @@
 <body>
 <div class="header">
     <div class="language">EN</div>
-    <div class="top-background"></div>
     <div class="logout" id="header-logout">Log out</div>
 </div>
 
 <div id="buttons">
-<a href="borrow.html" id="borrow" class="rounded-button blue">Borrow</a>
-<a href="return.html" id="return" class="rounded-button pink">Return</a>
+<a href="borrow.html" id="borrow" class="rounded-button green">Borrow</a>
+<a href="return.html" id="return" class="rounded-button yellow">Return</a>
 </div>
-<!-- Might not be necesssary -->
-<div class="footer"><div class="bottom-background"></div></div>
 
 </body>
 
