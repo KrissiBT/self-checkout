@@ -44,6 +44,7 @@ function addLoadEvent(func)
 addLoadEvent(function() 
 {
     $("#header-logout").click(function() {UILogout()});
+    $("#logout").click(function() {UILogout()});
 });
 
 
