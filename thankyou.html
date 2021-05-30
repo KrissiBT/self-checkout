@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="js/kiosk.js"></script>
+<script type="text/javascript" src="js/main.js"> </script>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<link rel="stylesheet" href="css/thankyou.css" type="text/css">
+
+<title>Thank you</title>
+
+<script type="text/javascript">
+    addLoadEvent(function (){
+        let tParamList = new URLSearchParams(window.location.search);
+        let tDate = tParamList.get("returnDate");
+
+
+        if (tDate !== null)
+        {
+            document.getElementById("message").innerHTML = "Please return all items due";
+            document.getElementById("date").innerHTML = tDate;
+        }
+        else
+        {
+            document.getElementById("message").innerHTML = "All tools are now home ready to be shared with others";
+        }
+    });
+</script>
+
+</head>
+
+<body>
+<div class="header"><div class="language">EN</div></div>
+
+<div class="in-grid left-col8 width-col4"><div class="section-title">Thank you</div></div><br/>
+<div class="in-grid left-col8 width-col4" id="message"></div>
+<div class="in-grid left-col8 width-col4" id="date"></div>
+
+<div class="rounded-button green" id="logout" click=>Log out</div>
+<a href="home.html" class="rounded-button hollow-green" id="home">Back to home screen</a>
+
+</body>
+
+</html> 

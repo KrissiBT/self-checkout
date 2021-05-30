@@ -1,0 +1,38 @@
+@import "common.css";
+
+#logout
+{
+    position: absolute;
+    left: 1148px;
+    top: 708px;
+}
+
+#home
+{
+    position: absolute;
+    width: 407px;
+    left: 1148px;
+    top: 836px;
+}
+
+body
+{
+    background-image: url(../img/thankyou.png);
+    background-size: 924px 917px;
+    background-position: 52px 113px;
+    background-repeat: no-repeat;
+}
+
+#message
+{
+    top: 300px;
+    font-size: 26px;
+    font-family: Lexend-Deca;
+}
+
+#date
+{
+    top: 372px;
+    font-size: 48px;
+    font-family: Lexend-Deca;
+}
