@@ -12,31 +12,23 @@
     const login = () => {
         let tNextPage = "oops";
         tKiosk.login($("#kennitala").val(), $("#password").val())
-            .then(response => {
-                if (response.ok){
-                    console.log("response is OK");
-                    return response.json().then(
-                        data => {
-                            Kiosk._storeVar('token', data['access_token']);
-                            tNextPage = "home";
-                        })
-                }
-                else if (response.status == 400 || response.status == 401)
+            .then(code => {
+                if (code === 200)
                 {
-                    // Login failure, reload the login page
+                    // Successful login
+                    tNextPage = "home";
+                }
+                else if (code >= 400 && code < 500)
+                {
+                    // Failed login
                     tNextPage = "login";
                 }
                 else
                 {
-                    console.log(response);
-                    throw -1;
+                    // Server error
+                    tNextPage = "oops";
                 }
-            })
-            .catch(error => {
-                debugger;
-                console.log("response is not OK");
-            })
-            .finally((info) => {
+
                 itemList.clearSelection();
 
                 if (tNextPage == "oops")

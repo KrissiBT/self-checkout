@@ -109,19 +109,15 @@ class itemList
 
     itemClicked(pID)
     {
-        if (!pID in this._selectedItems)
+        debugger;
+        if (pID in this._selectedItems)
         {
-            return;
-        }
-
-        if (this._selectedItems.pID)
-        {
-            delete this._selectedItems.pID;
+            delete this._selectedItems[pID];
             document.getElementById(pID).classList.remove("selected");
         }
         else
         {
-            this._selectedItems.pID = this._elements[pID];
+            this._selectedItems[pID] = this._elements[pID];
             document.getElementById(pID).classList.add("selected");
         }
 

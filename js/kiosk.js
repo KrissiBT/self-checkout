@@ -90,6 +90,11 @@ class Kiosk
         Kiosk._storeVar('token', pToken);
     }
 
+    static _clearSessionVar()
+    {
+        window.sessionStorage.clear();
+    }
+
     static _storeVar(pKey, pValue)
     {
         window.sessionStorage.setItem('kiosk' + pKey, pValue);
@@ -123,10 +128,33 @@ class Kiosk
     }
     
 
+    // Return an HTTP status code
     login(pUsername, pPassword)
     {
         return this._postRequest("api/login",
-                {"username": pUsername, "password": pPassword}, false);
+                {"username": pUsername, "password": pPassword}, false)
+            .then(response => {
+                if (response.ok){
+                    return response.json()
+                        .then(data => {
+                            Kiosk._clearSessionVar();
+                            Kiosk._storeVar('token', data['access_token']);
+                            return 200;
+                        });
+                }
+                else if (response.status == 400 || response.status == 401)
+                {
+                    return response.status;
+                }
+                else
+                {
+                    return response.status;
+                }
+            })
+            .catch(error => {
+                console.log("response is not OK");
+                return 500;
+            });
     }
 
     getReservations()
@@ -224,7 +252,7 @@ class Kiosk
             return false;
         }
 
-        return this._getRequest("/api/v1.1/self-checkout/carts/" + tCartID)
+        return this._getRequest("api/v1.1/self-checkout/carts/" + tCartID)
             .then(response => {
                 if (!response.ok)
                 {
@@ -287,7 +315,7 @@ class Kiosk
                 {
                     console.log("listItems returned " + response.status);
                     
-                    if (response.status == 404)
+                    if (userHasLoansresponse.status == 404)
                     {
                         return [];
                     }
