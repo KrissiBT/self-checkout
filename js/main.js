@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */ 
+
 const kKopaKioskURL = "https://kopakioskprototype.myturn.com/library";
 
 function UIGoToPage(pPage)
@@ -47,18 +49,18 @@ addLoadEvent(function()
     $("#logout").click(function() {UILogout()});
 });
 
-
-class itemList
+class ItemList
 {
     static _instance = null;
 
-    constructor(pTarget, pCounterID="", pType="grid"){
+    constructor(pTarget, pType="grid", pCounterID=""){
         this._target = "#" + pTarget;
         this._counterID = pCounterID;
         this._itemCount = 0;
         this._selectedItems = {};
         this._type = pType;
         this._elements = {};
+        this._extraColumn = {class: "", header: ""};
     }
 
     static clearSelection()
@@ -66,33 +68,50 @@ class itemList
         window.sessionStorage.removeItem("selection");
     }
 
-    // pType: 'grid' or 'list'
-    static createEmptyList(pTarget="", pCounterID="", pType="grid")
+    static _createEmptyList(pTarget="", pType="grid", pCounterID="")
     {
-        itemList._instance = new itemList(pTarget, pCounterID, pType);
-        return itemList._instance;
+        ItemList._instance = new ItemList(pTarget, pType, pCounterID);
+        return ItemList._instance;
     }
+
+    // pType: 'grid' or 'list'
+    static createEmptyList(pTarget="", pType="grid", pCounterID="")
+    {
+        return ItemList._createEmptyList(pTarget, pType, pCounterID);
+    }
+
+    static createEmptyReturnList(pListElementID = "")
+    {
+        let tItemList = ItemList._createEmptyList(pListElementID, "return-list");
+        tItemList._addColumn("need-maintenance", "Need maintenance?");
+        return tItemList;
+    }  
     
     static getItemList()
     {
-        if (itemList._instance === null)
+        if (ItemList._instance === null)
         {
             throw "No existing list";
         }
 
-        return itemList._instance;
+        return ItemList._instance;
     }
 
-    // pType: 'grid' or 'list'
-    static createListFromSavedSelection(pListElementID, pCounterID="", pType="grid")
+    // pType: 'grid', 'list', 'locker-list', 'return-list'
+    static createListFromSavedSelection(pListElementID, pType="grid", pCounterID="")
     {
-        let tItemList = itemList.createEmptyList(pListElementID, pCounterID, pType);
-        let tListElement = document.getElementById(pListElementID);
-        if (tListElement === null)
-        {
-            return tItemList;
-        }
+        let tItemList = ItemList.createEmptyList(pListElementID, pType, pCounterID);
+        tItemList._loadSelection();
+    }
 
+    static createReturnList(pListElementID)
+    {
+        let tItemList = ItemList.createEmptyReturnList(pListElementID, "return-list");
+        tItemList._loadSelection();
+    }
+
+    _loadSelection()
+    {
         try
         {
             let tSelection =JSON.parse(
@@ -100,26 +119,74 @@ class itemList
 
             Object.values(tSelection).forEach(tItem =>
             {
-                tItemList.addItem(tItem);
+                this.addItem(tItem);
             });
         }
         catch (pErr) {console.log(pErr);}
+    }
 
-        return tItemList;
+    _addColumn(pClass, pHeaderText)
+    {
+        this._extraColumn = {class: pClass, header:pHeaderText};
+        this._updateHeader();
+    }
+
+    _changeColumnHeader(pHeader)
+    {
+       this._extraColumn.header = pHeader;
+    }
+
+    _updateHeader()
+    {
+        let tTarget = document.getElementById(this._target);
+
+        if (tTarget === null)
+        {
+            return;
+        }
+
+        let tHeader = tTarget.getElementsByClassName("header");
+
+        if (tHeader !== null && tHeader.length == 1)
+        {
+            tHeader[0].innerHTML = this._extraColumn.header;
+        }
     }
 
     itemClicked(pID)
     {
-        debugger;
-        if (pID in this._selectedItems)
+        // Item in the selected list should be deselected
+        let tSelectItem = !(pID in this._selectedItems);
+        let tElement = document.getElementById(pID);
+
+        if (tSelectItem)
         {
-            delete this._selectedItems[pID];
-            document.getElementById(pID).classList.remove("selected");
+            this._selectedItems[pID] = this._elements[pID];
+            tElement.classList.add("selected");
         }
         else
         {
-            this._selectedItems[pID] = this._elements[pID];
-            document.getElementById(pID).classList.add("selected");
+            delete this._selectedItems[pID];
+            tElement.classList.remove("selected");
+        }
+        // debugger;
+        if (this._extraColumn.class === "need-maintenance")
+        {
+            let tText;
+            if (tSelectItem)
+            {
+                tText = "YES";
+            }
+            else
+            {
+                tText = "NO";
+            }
+
+            let tSwitch = tElement.getElementsByClassName(this._extraColumn.class);
+            if (tSwitch !== null && tSwitch.length == 1)
+            {
+                tSwitch[0].innerHTML = tText;   
+            }
         }
 
         window.sessionStorage.setItem("selection", 
@@ -127,8 +194,11 @@ class itemList
 
         try
         {
-            document.getElementById(this._counterID).innerHTML = 
-                    Object.keys(this._selectedItems).length + " selected";
+            if (this._counterID != "")
+            {
+                document.getElementById(this._counterID).innerHTML = 
+                        Object.keys(this._selectedItems).length + " selected";
+            }
         }
         catch (pErr){console.log(pErr);}
     }
@@ -152,7 +222,7 @@ class itemList
 
                     if (tElement != null)
                     {
-                        itemList.getItemList().itemClicked(tElement.id);
+                        ItemList.getItemList().itemClicked(tElement.id);
                     }});
 
         let tImage = document.createElement("img");
@@ -177,7 +247,10 @@ class itemList
 
             tRowElement.append(tItemBox);
 
-            document.querySelector(this._target).append(tRowElement);
+            let tListElem = document.querySelector(this._target);
+
+            tListElem.classList.add("grid-list");
+            tListElem.append(tRowElement);
         }
         else
         {
@@ -198,6 +271,23 @@ class itemList
             return;
         }
 
+        if (this._itemCount == 0)
+        {
+            tListContainer.classList.add("rounded-list");
+            if (this._extraColumn.header !== "")
+            {
+                let tHeaderRow = document.createElement("div");
+                tHeaderRow.classList.add("list-header");
+
+                let tHeader = document.createElement("div");
+                tHeader.classList.add(this._extraColumn.class);
+                tHeader.innerHTML = this._extraColumn.header;
+
+                tHeaderRow.append(tHeader);
+                tListContainer.append(tHeaderRow);
+            }
+        }
+
         this._itemCount++;
 
         let tCounter = document.createElement("div");
@@ -205,22 +295,49 @@ class itemList
         tCounter.innerHTML = this._itemCount + ".";
 
         let tEntry = document.createElement("div");
-        tEntry.classList.add("hollow-blue");
+        tEntry.classList.add("hollow-green");
         tEntry.classList.add("item");
         tEntry.innerHTML = pItem["name"];
         tEntry.id = pItem["itemId"];
 
         let tRow = document.createElement("div");
         tRow.classList.add("row");
+        tRow.id = this._itemCount;
+
         tRow.append(tCounter);
         tRow.append(tEntry);
+
+        if (this._extraColumn.class === "need-maintenance")
+        {
+            let tSwitchElem = document.createElement("div");
+            tSwitchElem.classList.add(this._extraColumn.class);
+            tSwitchElem.innerHTML = "NO";
+
+            tSwitchElem.addEventListener("click", function (event) {
+                    let tElement = event.target;
+                    while(tElement.id == "" && tElement != null)
+                    {
+                        tElement = tElement.parentElement;
+                    }
+
+                    if (tElement != null)
+                    {
+                        ItemList.getItemList().itemClicked(tElement.id);
+                    }});
+
+            tRow.append(tSwitchElem);
+        }
 
         tListContainer.append(tRow);
 
         try
         {
-            document.getElementById(this._counterID).innerHTML = 
-                    this._itemCount + " selected";
+            if (this._counterID != "")
+            {
+                debugger;
+                document.getElementById(this._counterID).innerHTML = 
+                        this._itemCount + " selected";
+            }
         }
         catch(pErr){console.log(pErr);}
     }
@@ -231,7 +348,8 @@ class itemList
         {
             this._addGridItem(pItem);
         }
-        else if (this._type == "list")
+        else if (this._type == "list" || this._type == "locker-list" ||
+                this._type == "return-list")
         {
             this._addListItem(pItem);
         }

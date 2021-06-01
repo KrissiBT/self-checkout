@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */ 
 /* Kiosk Javascript library */
 
 function fetchParams(pMethod, token='', data={})
@@ -356,41 +357,45 @@ class Kiosk
             throw 'No current cart ID defined';
         }
         
-        return this._getRequest("api/v1.1/carts/" + tCartID)
+        return this._getRequest("api/v1.1/self-checkout/carts/" + tCartID)
             .then(response => {
                 if (response.ok)
                 {
-                    console.log("borrowed item list returned")
+                    console.log("borrowed item list returned");
                     return response.json();
                 }
                 else
                 {
                     console.log("listBorrowedItems returned " + response.status);
-                    
+                    debugger;
                     if (response.status == 404)
                     {
                         return [];
                     }
+                    else if (response.status == 401)
+                    {
+                        // Logged out, back to login page
+                        UIGoToPage("login");
+                    }
                     else
                     {
-                        response.text()
-                            .then(text => {
-                                throw text;
-                            },
-                            error => {
-                                throw error;
-                            });
+                        throw response.statusText;
                     }
                 }
             })
             .then(pJson => {
+                if (pJson === null)
+                {
+                    return [];
+                }
+
                 let tItems = [];
 
                 if ('outstandingLoans' in pJson)
                 {
                     for (let tItem of pJson.outstandingLoans)
                     {
-                        tItems.push(tItem);
+                        tItems.push(tItem.item);
                     }
                 }
 
