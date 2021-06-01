@@ -53,39 +53,18 @@ class ItemList
 {
     static _instance = null;
 
-    constructor(pTarget, pType="grid", pCounterID=""){
+    constructor(pTarget, pCounterID = ""){
         this._target = "#" + pTarget;
         this._counterID = pCounterID;
         this._itemCount = 0;
         this._selectedItems = {};
-        this._type = pType;
         this._elements = {};
-        this._extraColumn = {class: "", header: ""};
     }
 
     static clearSelection()
     {
         window.sessionStorage.removeItem("selection");
     }
-
-    static _createEmptyList(pTarget="", pType="grid", pCounterID="")
-    {
-        ItemList._instance = new ItemList(pTarget, pType, pCounterID);
-        return ItemList._instance;
-    }
-
-    // pType: 'grid' or 'list'
-    static createEmptyList(pTarget="", pType="grid", pCounterID="")
-    {
-        return ItemList._createEmptyList(pTarget, pType, pCounterID);
-    }
-
-    static createEmptyReturnList(pListElementID = "")
-    {
-        let tItemList = ItemList._createEmptyList(pListElementID, "return-list");
-        tItemList._addColumn("need-maintenance", "Need maintenance?");
-        return tItemList;
-    }  
     
     static getItemList()
     {
@@ -95,19 +74,6 @@ class ItemList
         }
 
         return ItemList._instance;
-    }
-
-    // pType: 'grid', 'list', 'locker-list', 'return-list'
-    static createListFromSavedSelection(pListElementID, pType="grid", pCounterID="")
-    {
-        let tItemList = ItemList.createEmptyList(pListElementID, pType, pCounterID);
-        tItemList._loadSelection();
-    }
-
-    static createReturnList(pListElementID)
-    {
-        let tItemList = ItemList.createEmptyReturnList(pListElementID, "return-list");
-        tItemList._loadSelection();
     }
 
     _loadSelection()
@@ -125,39 +91,16 @@ class ItemList
         catch (pErr) {console.log(pErr);}
     }
 
-    _addColumn(pClass, pHeaderText)
-    {
-        this._extraColumn = {class: pClass, header:pHeaderText};
-        this._updateHeader();
-    }
-
-    _changeColumnHeader(pHeader)
-    {
-       this._extraColumn.header = pHeader;
-    }
-
-    _updateHeader()
-    {
-        let tTarget = document.getElementById(this._target);
-
-        if (tTarget === null)
-        {
-            return;
-        }
-
-        let tHeader = tTarget.getElementsByClassName("header");
-
-        if (tHeader !== null && tHeader.length == 1)
-        {
-            tHeader[0].innerHTML = this._extraColumn.header;
-        }
-    }
-
     itemClicked(pID)
     {
         // Item in the selected list should be deselected
         let tSelectItem = !(pID in this._selectedItems);
         let tElement = document.getElementById(pID);
+
+        if (tElement === null)
+        {
+            return;
+        }
 
         if (tSelectItem)
         {
@@ -168,25 +111,6 @@ class ItemList
         {
             delete this._selectedItems[pID];
             tElement.classList.remove("selected");
-        }
-        // debugger;
-        if (this._extraColumn.class === "need-maintenance")
-        {
-            let tText;
-            if (tSelectItem)
-            {
-                tText = "YES";
-            }
-            else
-            {
-                tText = "NO";
-            }
-
-            let tSwitch = tElement.getElementsByClassName(this._extraColumn.class);
-            if (tSwitch !== null && tSwitch.length == 1)
-            {
-                tSwitch[0].innerHTML = tText;   
-            }
         }
 
         window.sessionStorage.setItem("selection", 
@@ -202,8 +126,50 @@ class ItemList
         }
         catch (pErr){console.log(pErr);}
     }
-    
-    _addGridItem(pItem)
+
+    addItem(pItem)
+    {
+        if (pItem["itemId"] !== null)
+        {
+            this._elements[pItem["itemId"]] = pItem;
+        }
+    }
+
+    showEmpty(pMessage)
+    {
+        console.log("showEmpty");
+        $(this._target).append('<div class="message">' + pMessage + "</div>");
+    }
+
+    showError(pError)
+    {
+        console.log("showError");
+        console.log(pError);
+        $(this._target).append('<div class="message error">' + pError + "</div>");
+    }
+}
+
+class GridList extends ItemList
+{
+    constructor(pListElementID, pCounterID)
+    {
+        super(pListElementID, pCounterID);
+    }
+
+    static createList(pListElementID, pCounterID = "", pUseSelection= false)
+    {
+        let tList = new GridList(pListElementID, pCounterID);
+        ItemList._instance = tList;
+
+        if (pUseSelection)
+        {
+            tList._loadSelection();
+        }
+
+        return tList;
+    }
+
+    addItem(pItem)
     {
         let tRow, tRowElement;
 
@@ -222,7 +188,9 @@ class ItemList
 
                     if (tElement != null)
                     {
-                        ItemList.getItemList().itemClicked(tElement.id);
+                        let tList = ItemList.getItemList()
+
+                        tList.itemClicked(tElement.id);
                     }});
 
         let tImage = document.createElement("img");
@@ -260,9 +228,27 @@ class ItemList
         }
 
         this._itemCount++;
+        super.addItem(pItem);
+    }
+}
+
+class StackedList extends ItemList
+{
+    constructor(pListElementID, pCounterID)
+    {
+        super(pListElementID, pCounterID);
+        this._extraColumn = {class: "", header: ""};
     }
 
-    _addListItem(pItem)
+    static _createList(pListElementID, pCounterID = "", pUseSelection= false)
+    {
+        let tList = new StackedList(pListElementID, pCounterID);
+        ItemList._instance = tList;
+
+        return tList;
+    }
+
+    addItem(pItem)
     {
         let tListContainer = document.querySelector(this._target);
 
@@ -334,42 +320,94 @@ class ItemList
         {
             if (this._counterID != "")
             {
-                debugger;
                 document.getElementById(this._counterID).innerHTML = 
                         this._itemCount + " selected";
             }
         }
         catch(pErr){console.log(pErr);}
+
+        super.addItem(pItem);
     }
 
-    addItem(pItem)
+    itemClicked(pID)
     {
-        if (this._type == "grid")
+        if (this._extraColumn.class === "need-maintenance")
         {
-            this._addGridItem(pItem);
+            let tText;
+            if (!(pID in this._selectedItems))
+            {
+                tText = "YES";
+            }
+            else
+            {
+                tText = "NO";
+            }
+
+            let tElement = document.getElementById(pID);
+
+            if (tElement === null)
+            {
+                return;
+            }
+
+            let tSwitch = tElement.getElementsByClassName(this._extraColumn.class);
+            if (tSwitch !== null && tSwitch.length == 1)
+            {
+                tSwitch[0].innerHTML = tText;
+            }
         }
-        else if (this._type == "list" || this._type == "locker-list" ||
-                this._type == "return-list")
+
+        super.itemClicked(pID);
+    }
+
+    _addColumn(pClass, pHeaderText)
+    {
+        this._extraColumn = {class: pClass, header:pHeaderText};
+        this._updateHeader();
+    }
+
+    _changeColumnHeader(pHeader)
+    {
+       this._extraColumn.header = pHeader;
+    }
+
+    _updateHeader()
+    {
+        let tTarget = document.getElementById(this._target);
+
+        if (tTarget === null)
         {
-            this._addListItem(pItem);
+            return;
         }
-        
-        if (pItem["itemId"] !== null)
+
+        let tHeader = tTarget.getElementsByClassName("header");
+
+        if (tHeader !== null && tHeader.length == 1)
         {
-            this._elements[pItem["itemId"]] = pItem;
+            tHeader[0].innerHTML = this._extraColumn.header;
         }
     }
 
-    showEmpty(pMessage)
+    static createReturnList(pListElementID, pUseSelection = false)
     {
-        console.log("showEmpty");
-        $(this._target).append('<div class="message">' + pMessage + "</div>");
+        let tItemList = StackedList._createList(pListElementID, "");
+        tItemList._addColumn("need-maintenance", "Need maintenance?");
+
+        if (pUseSelection)
+        {
+            tItemList._loadSelection();
+        }
+        return tItemList;
     }
 
-    showError(pError)
+    static createList(pListElementID, pCounterID = "", pUseSelection = false)
     {
-        console.log("showError");
-        console.log(pError);
-        $(this._target).append('<div class="message error">' + pError + "</div>");
+        let tList = StackedList._createList(pListElementID, pCounterID);
+
+        if (pUseSelection)
+        {
+            tList._loadSelection();
+        }
+        return tList;
     }
 }
