@@ -1,13 +1,5 @@
 @import "common.css";
 
-#subtitle
-{
-    position: absolute;
-    width: 100%;
-    top: 200px;
-    text-align: center;
-    line-height: 24px;
-}
 
 .title
 {
@@ -15,13 +7,23 @@
     top: 100px;
 }
 
+.subtitle
+{
+    position: absolute;
+    width: 100%;
+    top: 200px;
+    text-align: center;
+    line-height: 24px;
+    font-size: 20px;
+}
+
 #itemlist
 {
     position: absolute;
-    width: 1272px;
+    width: 956px;
     height: 760px;
-    left: 326px;
-    top: 200px;
+    left: 482px;
+    top: 300px;
     
     overflow: auto;
     
