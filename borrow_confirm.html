@@ -15,8 +15,7 @@
     addLoadEvent(function() {
         let kiosk = initKopaKiosk();
 
-        let tItemList = itemList.createListFromSavedSelection("itemList", 
-                    "selected", "list");
+        StackedList.createList("itemList", "selected", true);
     });
 
 </script>
@@ -30,7 +29,7 @@
 <div class="content">
     <div class="title">Borrow</div>
     <div id="selected"></div>
-    <div id="itemList" class="rounded-list"></div>
+    <div id="itemList"></div>
 </div>
 
 <div class="footer gray">

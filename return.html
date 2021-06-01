@@ -11,8 +11,7 @@
 <script type="text/javascript">
     addLoadEvent(function() {
         let kiosk = initKopaKiosk();
-        let tList = itemList.createEmptyList("itemlist", "selected", "list");
-        
+        let tList = StackedList.createReturnList("itemlist");
         kiosk.listBorrowedItems()
             .then(pItems => {
                 if (pItems.length == 0)
@@ -42,11 +41,11 @@
 <body>
 <div class="header small">
     <div class="language">EN</div>
-    <div class="logout">Log out</div>
+    <div class="logout" id="header-logout">Log out</div>
 </div>
 
 <div class="title">Return</div>
-<div id="subtitle">
+<div class="subtitle">
     If any of the tools need maintenance please check it on the list.<br/>
     Continue and follow the instructions
 </div>
@@ -54,8 +53,8 @@
 <div id="itemlist"></div>
 
 <div class="footer gray">
-    <a href="home.html" class="go-back">Go back</a>
-    <div class="rounded-button blue">Continue</div>
+    <a href="home.html" class="go-back left-link">Go back</a>
+    <div class="rounded-button green">Continue</div>
 </div>
 
 </body>

@@ -14,7 +14,7 @@
 <script type="text/javascript">
     addLoadEvent(function() {
         let kiosk = initKopaKiosk();
-        let tList = itemList.createEmptyList("itemlist", "selected", "grid");
+        let tList = GridList.createList("itemlist", "selected");
         
         kiosk.listItems()
             .then(pItems => {
