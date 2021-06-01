@@ -11,7 +11,10 @@
 
     const login = () => {
         let tNextPage = "oops";
-        tKiosk.login($("#kennitala").val(), $("#password").val())
+        let tPassword = document.getElementById("password").value;
+        let tKennitala = document.getElementById("kennitala").value;
+
+        tKiosk.login(tKennitala, tPassword)
             .then(code => {
                 if (code === 200)
                 {

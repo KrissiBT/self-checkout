@@ -45,8 +45,17 @@ function addLoadEvent(func)
 
 addLoadEvent(function() 
 {
-    $("#header-logout").click(function() {UILogout()});
-    $("#logout").click(function() {UILogout()});
+    for (let tElement of ["header-logout", "logout"])
+    {
+        let tDomElem = document.getElementById(tElement);
+
+        if (tDomElem !== null)
+        {
+            tDomElem.addEventListener("click", function() {
+                UILogout();
+            });
+        }
+    }
 });
 
 class ItemList
@@ -138,14 +147,26 @@ class ItemList
     showEmpty(pMessage)
     {
         console.log("showEmpty");
-        $(this._target).append('<div class="message">' + pMessage + "</div>");
+        let tDomElem = document.getElementById(this._target);
+
+        if (tDomElem !== null)
+        {
+            tDomElem.innerHTML = tDomElem.innerHTML +
+                    '<div class="message">' + pMessage + "</div>";
+        }
     }
 
     showError(pError)
     {
         console.log("showError");
         console.log(pError);
-        $(this._target).append('<div class="message error">' + pError + "</div>");
+        let tDomElem = document.getElementById(this._target);
+
+        if (tDomElem !== null)
+        {
+            tDomElem.innerHTML = tDomElem.innerHTML +
+                    '<div class="message error">' + pError + "</div>";
+        }
     }
 }
 
