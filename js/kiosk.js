@@ -472,7 +472,7 @@ class Locker extends NetworkOp
     constructor(pURL)
     {
         super(pURL);
-        this._map = {};
+        this._map = null;
         this._openDoor = -1;
     }
 
@@ -516,6 +516,7 @@ class Locker extends NetworkOp
     _postRequest(pApi, pData={}, pNeedToken=true)
     {
         return new Promise((resolve, reject) => {
+            setTimeout( function() {
                 if (pApi.startsWith("open"))
                 {
                     resolve({status: 200});
@@ -539,8 +540,7 @@ class Locker extends NetworkOp
                 {
                     reject({error: "invalid operation " + pApi});
                 }
-
-            }, 1000);
+            }, 2000)});
 
         // return this.postData(this._endPointURL(pApi), pData);
     }
@@ -565,14 +565,21 @@ class Locker extends NetworkOp
 
     getItemDoor(pID)
     {
-        if (pID in this._map)
+        if (this._map === null)
         {
-            return this._map[pID];
+            throw -1;
         }
-        else
+
+        for (let [key, value] of this._map)
         {
-            return 1;
+            if (value == pItemID)
+            {
+                return key;
+            }
         }
+        debugger;
+        console.log("Cannot find item ID " + pItemID + " in locker map");
+        throw -1;
     }
 
     openDoor(pDoorID)
@@ -590,12 +597,20 @@ class Locker extends NetworkOp
     // Call with a negative integer to stop the checking
     isDoorClosed(pDoorID)
     {
+        debugger;
         if (this._openDoor !== -1 && pDoorID != this._openDoor)
         {
             return true;
         }
 
         return this._postRequest("status/" + pDoorID);
+    }
+
+    watchItemDoorStatus(pItemID, pCallback)
+    {
+        let tDoorID = this.getItemDoor(pDoorID);
+
+        watchDoorStatus(tDoorID);
     }
 
     watchDoorStatus(pDoorID, pCallback)
@@ -608,13 +623,18 @@ class Locker extends NetworkOp
 
     _checkDoor()
     {
-        if (isDoorClosed(this._watchDoorID))
-        {
-            pCallback();
-        }
-        else
-        {
-            setTimeout(_checkDoor, 1000);
-        }
+        this.isDoorClosed(this._watchDoorID)
+                .then(reply => {
+                    if (reply)
+                    {
+                        debugger;
+                        this._callback();
+                    }
+                    else
+                    {
+                        console.log("not closed yet, waiting");
+                        setTimeout(_checkDoor, 1000);
+                    }
+                });
     }
 }

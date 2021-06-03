@@ -557,8 +557,8 @@ class StackedList extends ItemList
                 tFormerlyActive.classList.add("hollow-gray");
             }
 
-            let tFormerInstructions = ItemList.findElementById("locker", tFormerID);
-            tFormerInstructions.classList.remove("show-arrow");
+            let tFormerInstructions = ItemList.getElementById("locker", tFormerID);
+            tFormerInstructions.classList.remove("item-active");
             if (tFormerInstructions !== null)
             {
                 tFormerInstructions.innerHTML = "";
@@ -573,7 +573,7 @@ class StackedList extends ItemList
 
         let tItemID = this._getItemId(tNewIndex);
         let tDomElem = document.getElementById(tItemID);
-        let tInstructions = ItemList.getElementById("locker", tItemID);
+        let tInstructionsDiv = ItemList.getElementById("locker", tItemID);
         if (tDomElem === null || tItemID === -1)
         {
             debugger;
@@ -585,7 +585,7 @@ class StackedList extends ItemList
         tDomElem.classList.add("hollow-green");
 
         // Create instruction elements
-        if (tInstructions === null)
+        if (tInstructionsDiv === null)
         {
             return null;
         }
@@ -598,8 +598,9 @@ class StackedList extends ItemList
         tInstruction.classList.add("instruction");
         tInstruction.innerHTML = pInstruction;
 
-        tInstructions.append(tSubTitle);
-        tInstructions.append(tInstruction);
+        tInstructionsDiv.append(tSubTitle);
+        tInstructionsDiv.append(tInstruction);
+        tInstructionsDiv.classList.add("item-active");
 
         return this.getItem(tItemID);
     }
