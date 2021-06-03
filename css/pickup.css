@@ -1,0 +1,12 @@
+@import "common.css";
+
+
+#itemlist
+{
+    width: 1175px;
+}
+
+.show-arrow
+{
+    background-image: url(../img/right_arrow.png);
+}
