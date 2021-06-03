@@ -5,3 +5,14 @@
     width: 1175px;
     left: 484px;
 }
+
+#selected
+{
+    position: absolute;
+    width: 100%;
+    top: 200px;
+
+    text-align: center;
+    font-size: 20px;
+    line-height: 20px;
+}
