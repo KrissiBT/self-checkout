@@ -152,7 +152,7 @@ class ItemList
 
             Object.values(tSelection).forEach(tItem =>
             {
-                this.addItem(tItem);
+                this.addItem(tItem, true);
             });
         }
         catch (pErr) {console.log(pErr);}
@@ -161,6 +161,20 @@ class ItemList
     getTargetElement()
     {
         return document.getElementById(this._target);
+    }
+
+    _selectItem(pID)
+    {
+        this._selectedItems[pID] = this._elements[pID];
+        try
+        {
+            if (this._counterID != "")
+            {
+                document.getElementById(this._counterID).innerHTML =
+                        Object.keys(this._selectedItems).length + " selected";
+            }
+        }
+        catch (pErr){console.log(pErr);}
     }
 
     itemClicked(pID)
@@ -185,26 +199,23 @@ class ItemList
             tElement.classList.remove("selected");
         }
 
+        this._selectItem(pID);
+
         window.sessionStorage.setItem("selection",
                 JSON.stringify(this._selectedItems));
-
-        try
-        {
-            if (this._counterID != "")
-            {
-                document.getElementById(this._counterID).innerHTML =
-                        Object.keys(this._selectedItems).length + " selected";
-            }
-        }
-        catch (pErr){console.log(pErr);}
     }
 
-    addItem(pItem)
+    addItem(pItem, pSelected = false)
     {
         if (pItem["itemId"] !== null)
         {
             this._elements[pItem["itemId"]] = pItem;
             this._itemCount++;
+
+            if (pSelected)
+            {
+                this._selectItem(pItem["itemId"]);
+            }
         }
     }
 
@@ -276,7 +287,7 @@ class GridList extends ItemList
         return tList;
     }
 
-    addItem(pItem)
+    addItem(pItem, pSelected = false)
     {
         let tRow, tRowElement;
         let tCurrentItemCount = this.getItemCount();
@@ -335,7 +346,7 @@ class GridList extends ItemList
             ItemList.getElementById("row", tRow).append(tItemBox);
         }
 
-        super.addItem(pItem);
+        super.addItem(pItem, pSelected);
     }
 }
 
@@ -358,7 +369,7 @@ class StackedList extends ItemList
         return tList;
     }
 
-    addItem(pItem)
+    addItem(pItem, pSelected = false)
     {
         let tListContainer = this.getTargetElement();
 
@@ -384,7 +395,7 @@ class StackedList extends ItemList
             }
         }
 
-        super.addItem(pItem);
+        super.addItem(pItem, pSelected);
 
         let tItemCount = this.getItemCount();
         this._idList.push(pItem["itemId"]);
@@ -436,16 +447,6 @@ class StackedList extends ItemList
         }
 
         tListContainer.append(tRow);
-
-        try
-        {
-            if (this._counterID != "")
-            {
-                document.getElementById(this._counterID).innerHTML =
-                        tItemCount + " selected";
-            }
-        }
-        catch(pErr){console.log(pErr);}
     }
 
     itemClicked(pID)
@@ -620,7 +621,7 @@ class StackedList extends ItemList
         this._map = pMap;
     }
 
-    static createLockerList(pListElementID, pUseSelection = true)
+    static createLockerList(pListElementID, pCounterID = "", pUseSelection = true)
     {
         let tList = StackedList._createList(pListElementID, "");
         tList._addColumn("locker", "");
@@ -633,7 +634,7 @@ class StackedList extends ItemList
         return tList;
     }
 
-    static createReturnList(pListElementID, pUseSelection = false)
+    static createReturnList(pListElementID, pCounterID = "", pUseSelection = false)
     {
         let tItemList = StackedList._createList(pListElementID, "");
         tItemList._addColumn("need-maintenance", "Need maintenance?");
