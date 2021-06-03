@@ -36,7 +36,7 @@
 
 
     addLoadEvent(function() {
-        let tList = StackedList.createLockerList("itemList", true);
+        let tList = StackedList.createLockerList("itemList", "selected", true);
 
         sLocker.loadMap()
                 .then(pMap => {
