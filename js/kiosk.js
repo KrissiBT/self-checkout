@@ -1,62 +1,6 @@
 /*jshint esversion: 6 */ 
 /* Kiosk Javascript library */
 
-function fetchParams(pMethod, token='', data={})
-{
-    let tParams = {
-        method: pMethod, // *GET, POST, PUT, DELETE, etc.
-        credentials: 'same-origin',
-        referrerPolicy: 'origin',
-        "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-    }
-
-    let tHeaders = {};
-    if (pMethod == "POST" && data != {})
-    {
-        tHeaders['Content-Type'] = 'application/json';
-        tParams.body = JSON.stringify(data); // body data type must match "Content-Type" header
-    }
-    else
-    {
-         tHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
-    }
-
-    if (token != '')
-    {
-        tHeaders.Authorization = "Bearer " + token;
-    }
-
-    if (tHeaders != {})
-    {
-        tParams.headers = tHeaders;
-    }
-
-    console.log("fetchParams:");
-    console.log(tParams);
-    return tParams;
-}
-
-function getData(url = '', token = '', params = {})
-{
-    // Default options are marked with *
-    console.log("getData");
-    let paramCount = 0;
-    for (let key in params) {
-        if (paramCount == 0){url += "?";}
-        else {url += "&";}
-
-        url += encodeURIComponent(key) + "=" + encodeURIComponent(params.key);
-    }
-    console.log("URL: " + url);
-    return fetch(url, fetchParams('GET', token));
-}
-
-// Example POST method implementation:
-function postData(url = '', data = {}, token = '') {
-    // Default options are marked with *
-    console.log("postData");
-    return fetch(url, fetchParams('POST', token, data));
-}
 
 function isEmpty(pObject)
 {
@@ -67,11 +11,95 @@ function isEmpty(pObject)
     return true;
 }
 
-class Kiosk
+class NetworkOp
 {
-    constructor(pURL, pToken){
-        this._token = pToken;
+    constructor (pURL)
+    {
         this._url = pURL;
+    }
+
+    fetchParams(pMethod, pData = {})
+    {
+        let tParams = {
+            method: pMethod, // *GET, POST, PUT, DELETE, etc.
+            credentials: 'same-origin',
+            referrerPolicy: 'origin',
+            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        }
+
+        let tHeaders = {};
+        if (pMethod == "POST" && pData != {})
+        {
+            tHeaders['Content-Type'] = 'application/json';
+            tParams.body = JSON.stringify(pData); // body data type must match "Content-Type" header
+        }
+        else
+        {
+             tHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+        }
+
+        if (tHeaders != {})
+        {
+            tParams.headers = tHeaders;
+        }
+
+        console.log("NetworkOp fetchParams:");
+        console.log(tParams);
+        return tParams;
+    }
+
+    getData(pUrl = "", pParams = {})
+    {
+        // Default options are marked with *
+        console.log("getData");
+        let tParamCount = 0;
+        for (let tKey in pParams) {
+            if (tParamCount == 0){pUrl += "?";}
+            else {pUrl += "&";}
+
+            pUrl += encodeURIComponent(tKey) + "=" + encodeURIComponent(pParams[tKey]);
+            tParamCount++;
+        }
+        console.log("URL: " + pUrl);
+        return fetch(pUrl, this.fetchParams('GET'));
+    }
+
+    // Example POST method implementation:
+    postData(pUrl = "", pData = {}) {
+        // Default options are marked with *
+        console.log("postData");
+        return fetch(pUrl, this.fetchParams('POST', pData));
+    }
+
+    _endPointURL(pAPI)
+    {
+        return this._url + "/" + pAPI;
+    }
+
+    _getRequest(pApi, pParams = {})
+    {
+        return this.getData(this._endPointURL(pApi), pParams, this._token);
+    }
+
+    _postRequest(pApi, pData={}, pNeedToken=true)
+    {
+        if (pNeedToken)
+        {
+            return this.postData(this._endPointURL(pApi), pData, this._token);
+        }
+        else
+        {
+            return this.postData(this._endPointURL(pApi), pData);
+        }
+    }
+}
+
+class Kiosk extends NetworkOp
+{
+    constructor(pURL, pToken, pRefreshToken){
+        super(pURL);
+        this._token = pToken;
+        this._refresh_token = pRefreshToken
     }
 
     static kSessKeyCartID = 'myturn.kiosk.activecartid';
@@ -80,7 +108,9 @@ class Kiosk
     {
         if (isEmpty(Kiosk._session))
         {
-            Kiosk._session = new Kiosk(pURL, Kiosk._fetchVar('token'));
+            Kiosk._session = new Kiosk(pURL,
+                        Kiosk._fetchVar('token'),
+                        Kiosk._fetchVar("refresh_token"));
         }
 
         return Kiosk._session;
@@ -106,28 +136,27 @@ class Kiosk
         return window.sessionStorage.getItem('kiosk' + pKey);
     }
 
-    _endPointURL(pAPI)
+    fetchParams(pURL, pData)
     {
-        return this._url + "/" + pAPI;
-    }
+        let tParams = super.fetchParams(pURL, pData);
 
-    _getRequest(pApi)
-    {
-        return getData(this._endPointURL(pApi), this._token);
-    }
+        if (this._token != '')
+        {
+            let tBearer = "Bearer " + this._token
+            if (!("headers" in tParams))
+            {
+                tParams.headers = { Authorization: tBearer };
+            }
+            else
+            {
+                tParams.headers.Authorization = tBearer;
+            }
+        }
 
-    _postRequest(pApi, pData={}, pNeedToken=true)
-    {
-        if (pNeedToken)
-        {
-            return postData(this._endPointURL(pApi), pData, this._token);
-        }
-        else
-        {
-            return postData(this._endPointURL(pApi), pData);
-        }
+        console.log("Kiosk fetchParams:");
+        console.log(tParams);
+        return tParams;
     }
-    
 
     // Return an HTTP status code
     login(pUsername, pPassword)
@@ -139,7 +168,9 @@ class Kiosk
                     return response.json()
                         .then(data => {
                             Kiosk._clearSessionVar();
-                            Kiosk._storeVar('token', data['access_token']);
+                            Kiosk._storeVar("token", data["access_token"]);
+                            Kiosk._storeVar("refresh_token", data["refresh_token"]);
+
                             return 200;
                         });
                 }
@@ -195,7 +226,10 @@ class Kiosk
                     console.log("no cart found, creating one");
                     return this.createCart();
                 }
-                else
+                else if (response.status == 401 && this._refresh_token !== null)
+                {
+
+                }
                 {
                     throw response.statusText;
                 }
@@ -367,7 +401,7 @@ class Kiosk
                 else
                 {
                     console.log("listBorrowedItems returned " + response.status);
-                    debugger;
+
                     if (response.status == 404)
                     {
                         return [];
@@ -417,5 +451,170 @@ class Kiosk
         return this._postRequest("api/logout", {}, false)
             .then(data => {},
                 error =>{});
+    }
+
+    static getReturnDate(pItem)
+    {
+        let tDate = new Date(Date.now() + pItem["loanLength"] * 24 * 60 * 60 * 1000);
+
+        return {
+            day: tDate.getDate(),
+            month: tDate.getMonth(),
+            year: tDate.getFullYear()
+        };
+    }
+}
+
+
+
+class Locker extends NetworkOp
+{
+    constructor(pURL)
+    {
+        super(pURL);
+        this._map = {};
+        this._openDoor = -1;
+    }
+
+    static getLocker(pURL)
+    {
+        return new Locker(pURL);
+    }
+
+    _getRequest(pApi)
+    {
+        return new Promise((resolve, reject) => {
+            setTimeout( function() {
+                if (pApi.startsWith("lockerMap"))
+                {
+                    let tMap = new Map();
+                    tMap.set("1", 12);
+                    tMap.set("2", 4);
+                    tMap.set("3", 6);
+                    tMap.set("4", 1);
+                    tMap.set("5", 3);
+                    tMap.set("6", 2);
+                    tMap.set("7", 11);
+                    tMap.set("8", 7);
+                    tMap.set("9", 9);
+                    tMap.set("10", 8);
+                    tMap.set("11", 10);
+                    tMap.set("12", 5);
+
+                    resolve(tMap);
+                }
+                else
+                {
+                    reject({error: "Invalid operation " + pApi});
+                }
+            })
+        });
+
+        // return this.getData(this._endPointURL(pApi), this._token);
+    }
+
+    _postRequest(pApi, pData={}, pNeedToken=true)
+    {
+        return new Promise((resolve, reject) => {
+                if (pApi.startsWith("open"))
+                {
+                    resolve({status: 200});
+                }
+                else if (pApi.startsWith("return"))
+                {
+                    resolve({status: 200});
+                }
+                else if (pApi.startsWith("status"))
+                {
+                    if ((Date.now() % 3) == 0)
+                    {
+                        resolve({closed: true});
+                    }
+                    else
+                    {
+                        resolve({closed: false});
+                    }
+                }
+                else
+                {
+                    reject({error: "invalid operation " + pApi});
+                }
+
+            }, 1000);
+
+        // return this.postData(this._endPointURL(pApi), pData);
+    }
+
+    _getMap()
+    {
+        return this._getRequest("lockerMap");
+    }
+
+    // Return the Promise of a Map <doorID> => <itemID>
+    loadMap()
+    {
+        return this._getMap()
+                .then(map => {
+                    this._map = map;
+                    return map;
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+    }
+
+    getItemDoor(pID)
+    {
+        if (pID in this._map)
+        {
+            return this._map[pID];
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    openDoor(pDoorID)
+    {
+        return this._postRequest("open/" + pDoorID);
+    }
+
+    returnItem(pItemID, pDoorID)
+    {
+        return this._postRequest("return/" + pDoorID, JSON.stringify(pItemID));
+    }
+
+    // Call with a positive integer to periodically check whether that door is
+    // open or closed
+    // Call with a negative integer to stop the checking
+    isDoorClosed(pDoorID)
+    {
+        if (this._openDoor !== -1 && pDoorID != this._openDoor)
+        {
+            return true;
+        }
+
+        return this._postRequest("status/" + pDoorID);
+    }
+
+    watchDoorStatus(pDoorID, pCallback)
+    {
+        this._callback = pCallback;
+        this._watchDoorID = pDoorID;
+
+        this._checkDoor();
+    }
+
+    _checkDoor()
+    {
+        if (isDoorClosed(this._watchDoorID))
+        {
+            pCallback();
+        }
+        else
+        {
+            setTimeout(_checkDoor, 1000);
+        }
     }
 }
