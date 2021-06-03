@@ -5,7 +5,7 @@
 <script type="text/javascript" src="js/main.js"> </script>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
-<link rel="stylesheet" href="css/borrow_confirm.css" type="text/css">
+<link rel="stylesheet" href="css/pickup.css" type="text/css">
 <link rel="shortcut icon" href="#">
 
 <title>Pick up</title>
@@ -15,7 +15,6 @@
     let sKiosk = initKopaKiosk();
     let sLocker = initLocker();
 
-    let sActiveIndex = 0;
     let sReturnDate = "";
 
     function pickUpNextItem()
@@ -27,11 +26,12 @@
         if (tActiveItem === null)
         {
             debugger;
-            UIGoPage("thankyou", {returnDate: tReturnDate});
+            UIGoToPage("thankyou", {returnDate: sReturnDate});
             return;
         }
 
         sReturnDate = Translator.getDate(Kiosk.getReturnDate(tActiveItem));
+        sLocker.watchDoorStatus(tActiveItem.itemId, pickUpNextItem);
     }
 
 
@@ -61,7 +61,6 @@
 
 <div class="footer gray">
     <a href="borrow.html" class="left-link">Need help?</a>
-    <a href="pick_up.html" class="rounded-button green">Continue</a>
 </div>
 
 </body>
