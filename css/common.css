@@ -184,6 +184,17 @@ a
     color: #232323;
 }
 
+.hollow-gray
+{
+    border: 5px solid #d8d8d8;
+    color: #232323;
+}
+
+.hollow-pale-green
+{
+    border: 5px solid #C8E8E7;
+    color: #232323;
+}
 
 .rounded-list
 {
@@ -282,6 +293,22 @@ a
     color: #0E837A;
 }
 
+.rounded-list .row .locker
+{
+    width: 456px;
+
+    margin-left: 20px;
+    padding-left: 73px;
+}
+
+.rounded-list .row .locker.item-active
+{
+    background-image: url(../img/right_arrow.png);
+    background-position: 0px center;
+    background-repeat: no-repeat;
+    background-size: 50px 50px;
+}
+
 .grid-list
 {
     position: absolute;
@@ -309,7 +336,7 @@ a
     width: 300px;
     height: 335px;
 
-    background: #ECECEC;
+    background: #c8e8e7;
     border: 5px solid #FFFFFF;
     box-sizing: border-box;
     border-radius: 10px;

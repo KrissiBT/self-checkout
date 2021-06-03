@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/kiosk.js"></script>
+<script type="text/javascript" src="js/main.js"> </script>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<link rel="stylesheet" href="css/borrow_confirm.css" type="text/css">
+<link rel="shortcut icon" href="#">
+
+<title>Pick up</title>
+
+<script type="text/javascript">
+
+    let sKiosk = initKopaKiosk();
+    let sLocker = initLocker();
+
+    let sActiveIndex = 0;
+    let sReturnDate = "";
+
+    function pickUpNextItem()
+    {
+        let tCurrentList = StackedList.getItemList();
+        let tActiveItem = tCurrentList.pickUpNextItem();
+
+        // All items returned, switch to next page
+        if (tActiveItem === null)
+        {
+            debugger;
+            UIGoPage("thankyou", {returnDate: tReturnDate});
+            return;
+        }
+
+        sReturnDate = Translator.getDate(Kiosk.getReturnDate(tActiveItem));
+    }
+
+
+    addLoadEvent(function() {
+        let tList = StackedList.createLockerList("itemList", true);
+
+        sLocker.loadMap()
+                .then(pMap => {
+                    tList.setLockerMap(pMap);
+                    pickUpNextItem();
+                })
+    });
+
+</script>
+</head>
+
+<body>
+<div class="small header">
+    <div class="language">EN</div>
+    <div class="logout" id="header-logout">Log out</div>
+</div>
+<div class="content">
+    <div class="title">Borrow</div>
+    <div id="selected"></div>
+    <div id="itemList"></div>
+</div>
+
+<div class="footer gray">
+    <a href="borrow.html" class="left-link">Need help?</a>
+    <a href="pick_up.html" class="rounded-button green">Continue</a>
+</div>
+
+</body>
+
+</html> 
