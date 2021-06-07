@@ -11,6 +11,38 @@ function isEmpty(pObject)
     return true;
 }
 
+class Storage
+{
+    static store(pKey, pValue)
+    {
+        window.sessionStorage.setItem(pKey, JSON.stringify(pValue));
+    }
+
+    static fetch(pKey)
+    {
+        let tValue = window.sessionStorage.getItem(pKey);
+
+        if (tValue === null)
+        {
+            return null;
+        }
+        else
+        {
+            return JSON.parse(tValue);
+        }
+    }
+
+    static remove(pKey)
+    {
+        window.sessionStorage.removeItem(pKey);
+    }
+
+    static clear()
+    {
+        window.sessionStorage.clear();
+    }
+}
+
 class NetworkOp
 {
     constructor (pURL)
@@ -64,7 +96,7 @@ class NetworkOp
 
     getData(pUrl = "", pParams = {})
     {
-        console.log("getData");
+        console.log("GET from " + pUrl);
         let tParamCount = 0;
         for (let tKey in pParams) {
             if (tParamCount == 0){pUrl += "?";}
@@ -74,18 +106,17 @@ class NetworkOp
             tParamCount++;
         }
 
-        console.log("URL: " + pUrl);
         return fetch(pUrl, this.fetchParams('GET'));
     }
 
     postData(pUrl = "", pData = {}, pDataType = "body") {
-        console.log("postData");
+        console.log("POST to " + pUrl);
         return fetch(pUrl, this.fetchParams('POST', pData, pDataType));
     }
 
     deleteData(pUrl = "")
     {
-        console.log("deleteData");
+        console.log("deleteData " + pUrl);
         return fetch(pUrl, this.fetchParams("DELETE"));
     }
 
@@ -132,26 +163,22 @@ class Kiosk extends NetworkOp
 
     static _clearSessionVar()
     {
-        window.sessionStorage.clear();
+        Storage.clear();
+    }
+
+    static _clearVar(pKey)
+    {
+        Storage.remove("myturn.kiosk." + pKey);
     }
 
     static _storeVar(pKey, pValue)
     {
-        window.sessionStorage.setItem("myturn.kiosk." + pKey, JSON.stringify(pValue));
+        Storage.store("myturn.kiosk." + pKey, pValue);
     }
 
     static _fetchVar(pKey)
     {
-        let tValue = window.sessionStorage.getItem("myturn.kiosk." + pKey);
-
-        if (tValue !== null)
-        {
-            return JSON.parse(tValue);
-        }
-        else
-        {
-            return null;
-        }
+        return Storage.fetch("myturn.kiosk." + pKey);
     }
 
     _processLogin(pResponse)
@@ -162,6 +189,9 @@ class Kiosk extends NetworkOp
                 .then(data => {
                     Kiosk._storeVar("token", data["access_token"]);
                     Kiosk._storeVar("refresh_token", data["refresh_token"]);
+
+                    this._token = data["access_token"];
+                    this._refresh_token = data["refresh_token"];
 
                     return 200;
                 });
@@ -174,10 +204,12 @@ class Kiosk extends NetworkOp
 
     _refreshToken()
     {
-        let tRefreshToken = Kiosk._fetchVar("refresh_token");
+        // Consider existing token now invalid
+        this._token = null;
+        Kiosk._clearVar("token");
 
-        return  this._postRequest("oauth/access_token",
-                    {grant_type: "refresh_token", refresh_token: tRefreshToken}, "form")
+        return this._postRequest("oauth/access_token",
+                    {grant_type: "refresh_token", refresh_token: this._refresh_token}, "form")
             .then(response => {
                 return this._processLogin(response);
             });
@@ -238,8 +270,6 @@ class Kiosk extends NetworkOp
             }
         }
 
-        console.log("Kiosk fetchParams:");
-        console.log(tParams);
         return tParams;
     }
 
@@ -261,40 +291,65 @@ class Kiosk extends NetworkOp
         return this._getRequest("api/v1.1/reservations");
     }
 
-    loadCart()
+    _fetchCartDetails(pCartID)
     {
-        return this._getRequest("api/v1.1/self-checkout/carts")
+        return this._getRequest("api/v1.1/self-checkout/carts/" + pCartID)
             .then(response => {
                 if (response.ok)
                 {
                     return response.json()
-                        .then(pCarts => {
-                            if (pCarts.length > 0)
-                            {
-                                console.log("cart found");
-                                Kiosk._storeVar("cart", pCarts[0]);
-                            }
-                            else
-                            {
-                                console.log("no 404, but no cart. Creating one");
-                                return this.createCart();
-                            }
+                        .then(pCart => {
+                            Kiosk._storeVar("cart", pCart);
                         });
                 }
-                else if (response.status == 404)
-                {
-                    console.log("no cart found, creating one");
-                    return this.createCart();
-                }
-                else if (response.status == 401 && this._refresh_token !== null)
-                {
-                    throw response.statusText;
-                }
-            })
-            .catch(error => {
-                console.log(error);
-                throw error;
             });
+    }
+
+    // Return promise
+    loadCart()
+    {
+        let tCart = Kiosk._fetchVar("cart");
+        if (tCart === null)
+        {
+            return this._getRequest("api/v1.1/self-checkout/carts")
+                .then(response => {
+                    if (response.ok)
+                    {
+                        return response.json()
+                            .then(pCarts => {
+                                if (pCarts.length > 0)
+                                {
+                                    console.log("cart found");
+                                    return this._fetchCartDetails(pCarts[0].id);
+                                }
+                                else
+                                {
+                                    console.log("no 404, but no cart found. Creating one");
+                                    return this.createCart();
+                                }
+                            });
+                    }
+                    else if (response.status == 404)
+                    {
+                        console.log("no cart found, creating one");
+                        return this.createCart();
+                    }
+                    else if (response.status == 401 && this._refresh_token !== null)
+                    {
+                        throw response.statusText;
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    throw error;
+                });
+        }
+        else
+        {
+            return new Promise((resolve, reject) => {
+                resolve(true);
+            });
+        }
     }
 
     // Create a cart and return the ID
@@ -436,26 +491,68 @@ class Kiosk extends NetworkOp
     {
         this.loadCart()
             .then(() => {
-            let tCartID = this.getCurrentCartID(true);
+                let tCartID = this.getCurrentCartID();
 
-            return this._postRequest("api/v1.1/self-checkout/carts/" + tCartID + "/checkouts",
-                    { "item-id": pItemID }, "form")
-                .then(response => {
-                    if (response.ok)
-                    {
-                        return response.json();
-                    }
-                    else
-                    {
-                        UIReportError(response.statusText);
-                        throw response.status;
-                    }
-                })
-                .then(pCart => {
-                    // New cart state returned, store it
-                    console.log("borrowItem finished");
-                    return Kiosk._storeVar("cart", pCart);
+                return this._postRequest("api/v1.1/self-checkout/carts/" + tCartID + "/checkouts",
+                        { "item-id": pItemID }, "form")
+                    .then(response => {
+                        if (response.ok)
+                        {
+                            return response.json();
+                        }
+                        else
+                        {
+                            UIReportError(response.statusText);
+                            throw response.status;
+                        }
+                    })
+                    .then(pCart => {
+                        // New cart state returned, store it
+                        console.log("borrowItem finished");
+                        return Kiosk._storeVar("cart", pCart);
+                    });
                 });
+    }
+
+    returnItem(pItemID)
+    {
+        this.loadCart()
+            .then(() => {
+                let tCart = Kiosk._fetchVar("cart");
+
+                let tLoanID = null;
+                for (let tLoan of tCart.outstandingLoans)
+                {
+                    if (tLoan.item.itemId == pItemID)
+                    {
+                        tLoanID = tLoan.id;
+                    }
+                }
+
+                if (tLoanID === null)
+                {
+                    throw "Cannot find loan ID for the item ID " + pItemID;
+                }
+
+                return this._postRequest("api/v1.1/self-checkout/carts/" + tCart.id +
+                            "/checkins/" + tLoanID)
+                    .then(pResponse => {
+                        if (pResponse.ok)
+                        {
+                            return pResponse.json();
+                        }
+                        else
+                        {
+                            UIReportError(pResponse.statusText);
+                            throw pResponse.status;
+                        }
+                    })
+                    .then(pCart => {
+                        // New cart state returned, store it
+                        console.log("returnItem finished");
+                        return Kiosk._storeVar("cart", pCart);
+                    });
+
             });
     }
 
@@ -477,7 +574,7 @@ class Kiosk extends NetworkOp
                 {
                     debugger;
                     // Cart converted and deleted, remove from Object
-                    Kiosk._storeVar("cart", null);
+                    Kiosk._clearVar("cart");
                     UIReportError(response);
                     throw response.status;
                 }
@@ -582,15 +679,25 @@ class Kiosk extends NetworkOp
 
     clearCart()
     {
-        let tCardID = this.getCurrentCartID();
+        let tCartID = this.getCurrentCartID();
+        if (tCartID === "")
+        {
+            return new Promise((resolve, reject) => {
+                resolve(true);
+            });
+        }
 
-        return this._deleteRequest("api/v1.1/self-checkout/carts/" + tCardID)
-                .then(response => {
-                    if (response.ok)
-                    {
-                        return this.loadCart();
-                    }
-                });
+        return this._deleteRequest("api/v1.1/self-checkout/carts/" + tCartID)
+            .then(pResponse => {
+                if (pResponse.ok)
+                {
+                    return this.loadCart();
+                }
+                else
+                {
+                    return Kiosk._clearVar("cart");
+                }
+            });
     }
 
     lastError()
@@ -672,7 +779,7 @@ class Locker extends NetworkOp
         // return this.getData(this._endPointURL(pApi), this._token);
     }
 
-    _postRequest(pApi, pData={}, pNeedToken=true)
+    _postRequest(pApi, pData = {})
     {
         return new Promise((resolve, reject) => {
             setTimeout( function() {

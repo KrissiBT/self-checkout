@@ -127,7 +127,7 @@ class ItemList
 
     static clearSelection()
     {
-        window.sessionStorage.removeItem("selection");
+        Storage.store("selection", null);
     }
 
     static getItemList()
@@ -154,13 +154,15 @@ class ItemList
     {
         try
         {
-            let tSelection =JSON.parse(
-                        window.sessionStorage.getItem("selection"));
+            let tSelection = Storage.fetch("selection");
 
-            Object.values(tSelection).forEach(tItem =>
+            if (tSelection !== null)
             {
-                this.addItem(tItem, true);
-            });
+                Object.values(tSelection).forEach(tItem =>
+                {
+                    this.addItem(tItem, true);
+                });
+            }
         }
         catch (pErr) {console.log(pErr);}
     }
@@ -173,6 +175,8 @@ class ItemList
     _selectItem(pID)
     {
         this._selectedItems[pID] = this._elements[pID];
+        Storage.store("selection", this._selectedItems);
+
         try
         {
             if (this._counterID != "")
@@ -207,9 +211,6 @@ class ItemList
         }
 
         this._selectItem(pID);
-
-        window.sessionStorage.setItem("selection",
-                JSON.stringify(this._selectedItems));
     }
 
     addItem(pItem, pSelected = false)
@@ -616,6 +617,11 @@ class StackedList extends ItemList
     pickUpNextItem()
     {
         return this._setNextItemActive("Please collect item and close door");
+    }
+
+    returnNextItem()
+    {
+        return this._setNextItemActive("Insert item inside the shelf and close to continue");
     }
 
     getActiveItem()
