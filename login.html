@@ -17,27 +17,14 @@
             .then(code => {
                 if (code === 200)
                 {
-                    // Successful login
-                    tNextPage = "home";
+                    UIGoToPage("home");
                 }
-                else if (code >= 400 && code < 500)
-                {
-                    // Failed login
-                    tNextPage = "login";
-                }
-                else
-                {
-                    // Server error
-                    tNextPage = "oops";
-                }
-
-                ItemList.clearSelection();
-
-                if (tNextPage == "oops")
+            })
+            .catch(error => {
+                if (pError.status)
                 {
                     debugger;
                 }
-                window.open(tNextPage + ".html", name="_self");
             });
     }
 </script>
