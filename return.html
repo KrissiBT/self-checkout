@@ -19,10 +19,9 @@
                 }
                 else
                 {
-                    let tItem;
-                    for (tItem of pItems)
+                    for (let tItem of pItems)
                     {
-                        tList.addItem(tItem);
+                        tList.addItem(tItem, true);
                     }
                 }
             })
@@ -53,7 +52,7 @@
 
 <div class="footer gray">
     <a href="home.html" class="go-back left-link">Go back</a>
-    <div class="rounded-button green">Continue</div>
+    <a href="drop.html" class="rounded-button green">Continue</a>
 </div>
 
 </body>

@@ -15,8 +15,6 @@
     let sKiosk = initKopaKiosk();
     let sLocker = initLocker();
 
-    let sReturnDate = "";
-
     function doorClosed()
     {
         let tCurrentList = StackedList.getItemList();
@@ -33,27 +31,25 @@
         sKiosk.commitCart()
             .then(() => {
                 console.log("about to pick up next item");
-                pickUpNextItem();
+                returnNextItem();
             });
     }
 
-    function pickUpNextItem()
+    function returnNextItem()
     {
         let tCurrentList = StackedList.getItemList();
-        let tActiveItem = tCurrentList.pickUpNextItem();
+        let tActiveItem = tCurrentList.returnNextItem();
 
         // All items returned, switch to next page
         if (tActiveItem === null)
         {
-            UIGoToPage("thankyou", {returnDate: sReturnDate});
+            UIGoToPage("thankyou");
         }
         else
         {
             sLocker.openItemDoor(tActiveItem.itemId)
                 .then(() => {
-                    sReturnDate = Translator.getDate(Kiosk.getReturnDate(tActiveItem));
-
-                    return sKiosk.borrowItem(tActiveItem.itemId);
+                    return sKiosk.returnItem(tActiveItem.itemId);
                 })
                 .then(() => {
                     console.log("Watching door!!!");
@@ -71,10 +67,10 @@
         let tList = StackedList.createLockerList("itemList", "selected", true);
 
         sLocker.loadMap()
-                .then(pMap => {
-                    tList.setLockerMap(pMap);
-                    pickUpNextItem();
-                });
+            .then(pMap => {
+                tList.setLockerMap(pMap);
+                returnNextItem();
+        });
     });
 
 </script>
@@ -86,7 +82,7 @@
     <div class="logout" id="header-logout">Log out</div>
 </div>
 <div class="content">
-    <div class="title">Borrow - Hit C to mimic door closing</div>
+    <div class="title">Return - Hit C to mimic door closing</div>
     <div id="selected"></div>
     <div id="itemList"></div>
 </div>
