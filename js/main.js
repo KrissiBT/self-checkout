@@ -12,6 +12,13 @@ function initLocker()
     return Locker.getLocker(kLockerURL);
 }
 
+function UIReportError(pError)
+{
+    debugger;
+    console.log(pError);
+    //TODO Send report to an email address
+}
+
 function UIGoToPage(pPage, pGetParams = {})
 {
     let tSuffix = "";

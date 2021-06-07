@@ -18,7 +18,7 @@ class NetworkOp
         this._url = pURL;
     }
 
-    fetchParams(pMethod, pData = {})
+    fetchParams(pMethod, pData = {}, pDataType)
     {
         let tParams = {
             method: pMethod, // *GET, POST, PUT, DELETE, etc.
@@ -30,12 +30,26 @@ class NetworkOp
         let tHeaders = {};
         if (pMethod == "POST" && pData != {})
         {
-            tHeaders['Content-Type'] = 'application/json';
-            tParams.body = JSON.stringify(pData); // body data type must match "Content-Type" header
+            if (pDataType === "body")
+            {
+                tHeaders['Content-Type'] = 'application/json';
+                tParams.body = JSON.stringify(pData); // body data type must match "Content-Type" header
+            }
+            else if (pDataType === "form")
+            {
+                let tFormData = new FormData();
+
+                for (let tKey in pData)
+                {
+                    tFormData.append(tKey, pData[tKey]);
+                }
+
+                tParams.body = tFormData;
+            }
         }
         else
         {
-             tHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+            tHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
         }
 
         if (tHeaders != {})
@@ -50,7 +64,6 @@ class NetworkOp
 
     getData(pUrl = "", pParams = {})
     {
-        // Default options are marked with *
         console.log("getData");
         let tParamCount = 0;
         for (let tKey in pParams) {
@@ -60,15 +73,20 @@ class NetworkOp
             pUrl += encodeURIComponent(tKey) + "=" + encodeURIComponent(pParams[tKey]);
             tParamCount++;
         }
+
         console.log("URL: " + pUrl);
         return fetch(pUrl, this.fetchParams('GET'));
     }
 
-    // Example POST method implementation:
-    postData(pUrl = "", pData = {}) {
-        // Default options are marked with *
+    postData(pUrl = "", pData = {}, pDataType = "body") {
         console.log("postData");
-        return fetch(pUrl, this.fetchParams('POST', pData));
+        return fetch(pUrl, this.fetchParams('POST', pData, pDataType));
+    }
+
+    deleteData(pUrl = "")
+    {
+        console.log("deleteData");
+        return fetch(pUrl, this.fetchParams("DELETE"));
     }
 
     _endPointURL(pAPI)
@@ -78,19 +96,17 @@ class NetworkOp
 
     _getRequest(pApi, pParams = {})
     {
-        return this.getData(this._endPointURL(pApi), pParams, this._token);
+        return this.getData(this._endPointURL(pApi), pParams);
     }
 
-    _postRequest(pApi, pData={}, pNeedToken=true)
+    _postRequest(pApi, pData = {}, pDataType = "body")
     {
-        if (pNeedToken)
-        {
-            return this.postData(this._endPointURL(pApi), pData, this._token);
-        }
-        else
-        {
-            return this.postData(this._endPointURL(pApi), pData);
-        }
+        return this.postData(this._endPointURL(pApi), pData, pDataType);
+    }
+
+    _deleteRequest(pApi)
+    {
+        return this.deleteData(this._endPointURL(pApi));
     }
 }
 
@@ -102,23 +118,16 @@ class Kiosk extends NetworkOp
         this._refresh_token = pRefreshToken
     }
 
-    static kSessKeyCartID = 'myturn.kiosk.activecartid';
-
     static getSessionKiosk(pURL)
     {
         if (isEmpty(Kiosk._session))
         {
             Kiosk._session = new Kiosk(pURL,
-                        Kiosk._fetchVar('token'),
+                        Kiosk._fetchVar("token"),
                         Kiosk._fetchVar("refresh_token"));
         }
 
         return Kiosk._session;
-    }
-
-    static setToken(pToken)
-    {
-        Kiosk._storeVar('token', pToken);
     }
 
     static _clearSessionVar()
@@ -128,17 +137,93 @@ class Kiosk extends NetworkOp
 
     static _storeVar(pKey, pValue)
     {
-        window.sessionStorage.setItem('kiosk' + pKey, pValue);
+        window.sessionStorage.setItem("myturn.kiosk." + pKey, JSON.stringify(pValue));
     }
 
     static _fetchVar(pKey)
     {
-        return window.sessionStorage.getItem('kiosk' + pKey);
+        let tValue = window.sessionStorage.getItem("myturn.kiosk." + pKey);
+
+        if (tValue !== null)
+        {
+            return JSON.parse(tValue);
+        }
+        else
+        {
+            return null;
+        }
     }
 
-    fetchParams(pURL, pData)
+    _processLogin(pResponse)
     {
-        let tParams = super.fetchParams(pURL, pData);
+        if (pResponse.ok)
+        {
+            return pResponse.json()
+                .then(data => {
+                    Kiosk._storeVar("token", data["access_token"]);
+                    Kiosk._storeVar("refresh_token", data["refresh_token"]);
+
+                    return 200;
+                });
+        }
+        else
+        {
+            throw pResponse;
+        }
+    }
+
+    _refreshToken()
+    {
+        let tRefreshToken = Kiosk._fetchVar("refresh_token");
+
+        return  this._postRequest("oauth/access_token",
+                    {grant_type: "refresh_token", refresh_token: tRefreshToken}, "form")
+            .then(response => {
+                return this._processLogin(response);
+            });
+    }
+
+    _postRequest(pUrl, pData, pDataType)
+    {
+        return super._postRequest(pUrl, pData, pDataType)
+            .then(pResponse => {
+                if (pResponse.status === 401)
+                {
+                    // Refresh the token if outdated
+                    return this._refreshToken()
+                        .then(() => {
+                            return super._postRequest(pUrl, pData, pDataType);
+                        });
+                }
+                else
+                {
+                    return pResponse;
+                }
+            });
+    }
+
+    _getRequest(pUrl, pParams)
+    {
+        return super._getRequest(pUrl, pParams)
+            .then(pResponse => {
+                if (pResponse.status === 401)
+                {
+                    // Refresh the token and try again
+                    return this._refreshToken()
+                        .then(() => {
+                            return super._getRequest(pUrl, pParams);
+                        });
+                }
+                else
+                {
+                    return pResponse;
+                }
+            });
+    }
+
+    fetchParams(pMethod, pData, pDataType)
+    {
+        let tParams = super.fetchParams(pMethod, pData, pDataType);
 
         if (this._token != '')
         {
@@ -161,31 +246,13 @@ class Kiosk extends NetworkOp
     // Return an HTTP status code
     login(pUsername, pPassword)
     {
-        return this._postRequest("api/login",
-                {"username": pUsername, "password": pPassword}, false)
-            .then(response => {
-                if (response.ok){
-                    return response.json()
-                        .then(data => {
-                            Kiosk._clearSessionVar();
-                            Kiosk._storeVar("token", data["access_token"]);
-                            Kiosk._storeVar("refresh_token", data["refresh_token"]);
+        // First clear all previous login info
+        Kiosk._clearSessionVar();
 
-                            return 200;
-                        });
-                }
-                else if (response.status == 400 || response.status == 401)
-                {
-                    return response.status;
-                }
-                else
-                {
-                    return response.status;
-                }
-            })
-            .catch(error => {
-                console.log("response is not OK");
-                return 500;
+        return this._postRequest("api/login",
+                {"username": pUsername, "password": pPassword})
+            .then(response => {
+                return this._processLogin(response);
             });
     }
 
@@ -205,14 +272,7 @@ class Kiosk extends NetworkOp
                             if (pCarts.length > 0)
                             {
                                 console.log("cart found");
-                                if ("id" in pCarts[0])
-                                {
-                                    this.setCurrentCartID(pCarts[0].id);
-                                }
-                                else
-                                {
-                                    this.setCurrentCartID("");
-                                }
+                                Kiosk._storeVar("cart", pCarts[0]);
                             }
                             else
                             {
@@ -227,9 +287,6 @@ class Kiosk extends NetworkOp
                     return this.createCart();
                 }
                 else if (response.status == 401 && this._refresh_token !== null)
-                {
-
-                }
                 {
                     throw response.statusText;
                 }
@@ -247,10 +304,7 @@ class Kiosk extends NetworkOp
             .then(response => {
                 return response.json()
                         .then(pCart => {
-                            if ('id' in pCart)
-                            {
-                                this.setCurrentCartID(pCart.id);
-                            }
+                            Kiosk._storeVar("cart", pCart);
                         });
             })
             .catch(error => {
@@ -261,21 +315,16 @@ class Kiosk extends NetworkOp
 
     getCurrentCartID(pID)
     {
-        let tCartID = window.sessionStorage.getItem(Kiosk.kSessKeyCartID);
+        let tCart = Kiosk._fetchVar("cart");
 
-        if (tCartID === null)
+        if (tCart === null)
         {
             return "";
         }
         else
         {
-            return tCartID;
+            return tCart.id;
         }
-    }
-
-    setCurrentCartID(pID)
-    {
-        window.sessionStorage.setItem(Kiosk.kSessKeyCartID, pID);
     }
 
     _userHasLoans()
@@ -291,7 +340,7 @@ class Kiosk extends NetworkOp
             .then(response => {
                 if (!response.ok)
                 {
-                    console.log("get cart content failed:" + response.statusCode);
+                    console.log("get cart content failed:" + response.status);
                     throw response.statusText;
                 }
 
@@ -381,10 +430,101 @@ class Kiosk extends NetworkOp
             });
     }
 
+    // Return true on success
+    // Throw an error on failure
+    borrowItem(pItemID)
+    {
+        this.loadCart()
+            .then(() => {
+            let tCartID = this.getCurrentCartID(true);
+
+            return this._postRequest("api/v1.1/self-checkout/carts/" + tCartID + "/checkouts",
+                    { "item-id": pItemID }, "form")
+                .then(response => {
+                    if (response.ok)
+                    {
+                        return response.json();
+                    }
+                    else
+                    {
+                        UIReportError(response.statusText);
+                        throw response.status;
+                    }
+                })
+                .then(pCart => {
+                    // New cart state returned, store it
+                    console.log("borrowItem finished");
+                    return Kiosk._storeVar("cart", pCart);
+                });
+            });
+    }
+
+    // Commit the cart transaction
+    // Return promise
+    commitCart()
+    {
+        let tCartID = this.getCurrentCartID();
+
+        return this._postRequest("api/v1.1/self-checkout/carts/" + tCartID + "/convert")
+            .then(response => {
+                if (response.ok)
+                {
+                    // Cart converted and deleted, remove from Object
+                    Kiosk._storeVar("cart", null);
+                    return true;
+                }
+                else
+                {
+                    debugger;
+                    // Cart converted and deleted, remove from Object
+                    Kiosk._storeVar("cart", null);
+                    UIReportError(response);
+                    throw response.status;
+                }
+            });
+    }
+
+    // Commit the current checkouts.
+    // Note that the cart must be committed with commitCart to finalise the transaction
+    // Return true on success
+    // Throw an error on failure
+    commitCheckouts()
+    {
+        let tCartID = this.getCurrentCartID();
+        let tCart = Kiosk._fetchVar("cart");
+
+        if (!("checkouts" in tCart) || tCart.checkouts.length === 0 ||
+                    tCart.checkouts[0].committed)
+        {
+            console.log("Cannot commit:");
+            console.log(tCart);
+            return;
+        }
+
+        // Commit the last checkout of the cart
+        debugger;
+        return this._postRequest("api/v1.1/self-checkout/carts/" + tCartID + "/checkouts/"
+                + tCart.checkouts[0].id + "/commit")
+            .then(response => {
+                debugger;
+                if (response.ok)
+                {
+                    console.log("commitCheckouts terminated");
+                    return true;
+                }
+                else
+                {
+                    UIReportError(response.statusText);
+                    throw response.status;
+                }
+            });
+    }
+
     // Return a list of items
+    // Throw an error on failure
     listBorrowedItems()
     {
-        let tCartID = window.sessionStorage.getItem(Kiosk.kSessKeyCartID);
+        let tCartID = this.getCurrentCartID();
 
         if (tCartID === null)
         {
@@ -440,6 +580,19 @@ class Kiosk extends NetworkOp
             });
     }
 
+    clearCart()
+    {
+        let tCardID = this.getCurrentCartID();
+
+        return this._deleteRequest("api/v1.1/self-checkout/carts/" + tCardID)
+                .then(response => {
+                    if (response.ok)
+                    {
+                        return this.loadCart();
+                    }
+                });
+    }
+
     lastError()
     {
         return this._lastError;
@@ -448,7 +601,7 @@ class Kiosk extends NetworkOp
     logout()
     {
         Kiosk._storeVar('token', "");
-        return this._postRequest("api/logout", {}, false)
+        return this._postRequest("api/logout", {})
             .then(data => {},
                 error =>{});
     }
@@ -474,6 +627,12 @@ class Locker extends NetworkOp
         super(pURL);
         this._map = null;
         this._openDoor = -1;
+
+        document.addEventListener("keypress", function onPress(event) {
+            if (event.key === "c" || event.key === "C") {
+                Locker._openDoor = -1;
+            }
+        });
     }
 
     static getLocker(pURL)
@@ -527,14 +686,7 @@ class Locker extends NetworkOp
                 }
                 else if (pApi.startsWith("status"))
                 {
-                    if ((Date.now() % 3) == 0)
-                    {
-                        resolve({closed: true});
-                    }
-                    else
-                    {
-                        resolve({closed: false});
-                    }
+                    resolve({closed: (Locker._openDoor === -1)});
                 }
                 else
                 {
@@ -563,7 +715,7 @@ class Locker extends NetworkOp
                 });
     }
 
-    getItemDoor(pID)
+    getItemDoor(pItemID)
     {
         if (this._map === null)
         {
@@ -584,7 +736,23 @@ class Locker extends NetworkOp
 
     openDoor(pDoorID)
     {
-        return this._postRequest("open/" + pDoorID);
+        return this._postRequest("open/" + pDoorID)
+                .then(response => {
+                    if (response.status === 200)
+                    {
+                        Locker._openDoor = pDoorID;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                });
+    }
+
+    openItemDoor(pItemID)
+    {
+        return this.openDoor(this.getItemDoor(pItemID));
     }
 
     returnItem(pItemID, pDoorID)
@@ -597,7 +765,6 @@ class Locker extends NetworkOp
     // Call with a negative integer to stop the checking
     isDoorClosed(pDoorID)
     {
-        debugger;
         if (this._openDoor !== -1 && pDoorID != this._openDoor)
         {
             return true;
@@ -608,9 +775,9 @@ class Locker extends NetworkOp
 
     watchItemDoorStatus(pItemID, pCallback)
     {
-        let tDoorID = this.getItemDoor(pDoorID);
+        let tDoorID = this.getItemDoor(pItemID);
 
-        watchDoorStatus(tDoorID);
+        this.watchDoorStatus(tDoorID, pCallback);
     }
 
     watchDoorStatus(pDoorID, pCallback)
@@ -625,15 +792,17 @@ class Locker extends NetworkOp
     {
         this.isDoorClosed(this._watchDoorID)
                 .then(reply => {
-                    if (reply)
+                    if (reply.closed)
                     {
-                        debugger;
+                        console.log("closed");
                         this._callback();
                     }
                     else
                     {
                         console.log("not closed yet, waiting");
-                        setTimeout(_checkDoor, 1000);
+                        setTimeout(() => {
+                            this._checkDoor()
+                        }, 1000);
                     }
                 });
     }
