@@ -33,8 +33,8 @@ body
     font-size: 20px;
     line-height: 60px;
 
-    color: #000000;
-    background-color: #FFFFFF;
+    color: #232323;
+    background-color: #FAFAFB;
 }
 
 
@@ -174,7 +174,7 @@ a
     height: 70px;
     line-height: 70px;
     border: 5px solid #38C0B6;
-    background: #FFFFFF;
+    background-color: #FFFFFF;
     color: #232323;
 }
 
@@ -188,12 +188,14 @@ a
 {
     border: 5px solid #d8d8d8;
     color: #232323;
+    background-color: #FFFFFF;
 }
 
 .hollow-pale-green
 {
     border: 5px solid #C8E8E7;
     color: #232323;
+    background-color: #FFFFFF;
 }
 
 .rounded-list
@@ -249,8 +251,8 @@ a
     width: 495px;
     height: 70px;
     line-height: 70px;
-    background: #FFFFFF;
-    color: #000000;
+    background-color: #FFFFFF;
+    color: #232323;
 
     text-align: left;
     font-size: 20px;
@@ -334,7 +336,6 @@ a
     overflow: auto;
     
     border-radius: 5px;
-    background-color: #FFFFFF;
 }
 
 
@@ -406,7 +407,7 @@ input
     font-size: 30px;
     vertical-align: middle;
 
-    background: #FFFFFFF;
+    background-color: #FFFFFFF;
 }
 
 input:focus
@@ -439,7 +440,7 @@ input:focus
     line-height: 20px;
     font-size: 60px;
     letter-spacing: 0.2px;
-    color: #000000;
+    color: #232323;
 }
 
 .footer .left-link
