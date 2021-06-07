@@ -21,12 +21,7 @@
 {
     position: absolute;
     width: 956px;
-    height: 760px;
+    height: 640px;
     left: 482px;
     top: 300px;
-    
-    overflow: auto;
-    
-    border-radius: 5px;
-    background-color: #FFFFFF;
 }

@@ -2,8 +2,11 @@
 
 #itemList
 {
+    position: absolute;
     width: 1175px;
+    height: 640px;
     left: 484px;
+    top: 300px;
 }
 
 #selected
