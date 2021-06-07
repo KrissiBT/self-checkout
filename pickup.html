@@ -17,6 +17,26 @@
 
     let sReturnDate = "";
 
+    function doorClosed()
+    {
+        let tCurrentList = StackedList.getItemList();
+        let tActiveItem = tCurrentList.getActiveItem();
+
+        if (tActiveItem === null || !("itemId" in tActiveItem))
+        {
+            debugger;
+            console.log(tActiveItem);
+
+            return;
+        }
+
+        sKiosk.commitCart()
+            .then(() => {
+                console.log("about to pick up next item");
+                pickUpNextItem();
+            });
+    }
+
     function pickUpNextItem()
     {
         let tCurrentList = StackedList.getItemList();
@@ -25,24 +45,39 @@
         // All items returned, switch to next page
         if (tActiveItem === null)
         {
-            debugger;
             UIGoToPage("thankyou", {returnDate: sReturnDate});
-            return;
         }
+        else
+        {
+            sLocker.openItemDoor(tActiveItem.itemId)
+                .then(() => {
+                    sReturnDate = Translator.getDate(Kiosk.getReturnDate(tActiveItem));
 
-        sReturnDate = Translator.getDate(Kiosk.getReturnDate(tActiveItem));
-        sLocker.watchDoorStatus(tActiveItem.itemId, pickUpNextItem);
+                    return sKiosk.borrowItem(tActiveItem.itemId);
+                })
+                .then(() => {
+                    console.log("Watching door!!!");
+                    sLocker.watchItemDoorStatus(tActiveItem.itemId, doorClosed);
+                })
+                .catch(pError => {
+                    debugger;
+                    //UIGoToPage("oops");
+                });
+        }
     }
 
 
     addLoadEvent(function() {
         let tList = StackedList.createLockerList("itemList", "selected", true);
 
-        sLocker.loadMap()
-                .then(pMap => {
-                    tList.setLockerMap(pMap);
-                    pickUpNextItem();
-                })
+        sKiosk.clearCart()
+                .then(() => {
+            sLocker.loadMap()
+                    .then(pMap => {
+                        tList.setLockerMap(pMap);
+                        pickUpNextItem();
+                    })
+                });
     });
 
 </script>
@@ -54,7 +89,7 @@
     <div class="logout" id="header-logout">Log out</div>
 </div>
 <div class="content">
-    <div class="title">Borrow</div>
+    <div class="title">Borrow - Hit C to mimic door closing</div>
     <div id="selected"></div>
     <div id="itemList"></div>
 </div>
