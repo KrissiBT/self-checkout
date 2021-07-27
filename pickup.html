@@ -3,12 +3,13 @@
 <head>
 <script type="text/javascript" src="js/kiosk.js"></script>
 <script type="text/javascript" src="js/main.js"> </script>
+
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
 <link rel="stylesheet" href="css/pickup.css" type="text/css">
 <link rel="shortcut icon" href="#">
 
-<title>Pick up</title>
+<title>Munasafn</title>
 
 <script type="text/javascript">
 
@@ -67,7 +68,7 @@
     }
 
 
-    addLoadEvent(function() {
+    addContGenFunction(function() {
         let tList = StackedList.createLockerList("itemList", "selected", true);
 
         sLocker.loadMap()
@@ -82,17 +83,17 @@
 
 <body>
 <div class="small header">
-    <div class="language">EN</div>
-    <div class="logout" id="header-logout">Log out</div>
+    <div id="language-switch"></div>
+    <div class="logout translate" id="header-logout">log-out</div>
 </div>
 <div class="content">
-    <div class="title">Borrow - Hit C to mimic door closing</div>
+    <div class="title translate">borrow-screen</div>
     <div id="selected"></div>
     <div id="itemList"></div>
 </div>
 
 <div class="footer gray">
-    <a href="borrow.html" class="left-link">Need help?</a>
+    <a href="help.html" class="left-link translate">need-help</a>
 </div>
 
 </body>

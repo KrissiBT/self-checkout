@@ -3,12 +3,15 @@
 <head>
 <script type="text/javascript" src="js/kiosk.js"></script>
 <script type="text/javascript" src="js/main.js"> </script>
+
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+<link rel="shortcut icon" href="#">
 
 <script type="text/javascript">
     let kiosk = initKopaKiosk();
 
-    addLoadEvent(
+    addContGenFunction(
         function ()
         {
             kiosk.userHasLoans()
@@ -33,18 +36,18 @@
 
 <link rel="stylesheet" href="css/home.css" type="text/css">
 
-<title>Home</title>
+<title>Munasafn</title>
 </head>
 
 <body>
 <div class="header">
-    <div class="language">EN</div>
-    <div class="logout" id="header-logout">Log out</div>
+    <div id="language-switch"></div>
+    <div class="logout translate" id="header-logout">log-out</div>
 </div>
 
 <div id="buttons">
-<a href="borrow.html" id="borrow" class="rounded-button green">Borrow</a>
-<a href="return.html" id="return" class="rounded-button yellow">Return</a>
+<a href="borrow.html" id="borrow" class="rounded-button green translate">borrow</a>
+<a href="return.html" id="return" class="rounded-button yellow translate">return</a>
 </div>
 
 </body>

@@ -3,12 +3,14 @@
 <head>
 <script type="text/javascript" src="js/kiosk.js"></script>
 <script type="text/javascript" src="js/main.js"> </script>
+
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
 <link rel="stylesheet" href="css/return.css" type="text/css">
+<link rel="shortcut icon" href="#">
 
 <script type="text/javascript">
-    addLoadEvent(function() {
+    addContGenFunction(function() {
         let kiosk = initKopaKiosk();
         let tList = StackedList.createReturnList("itemlist");
         kiosk.listBorrowedItems()
@@ -33,26 +35,23 @@
 
 </script>
 
-<title>Return</title>
+<title>Munasafn</title>
 </head>
 
 <body>
 <div class="header small">
-    <div class="language">EN</div>
-    <div class="logout" id="header-logout">Log out</div>
+    <div id="language-switch"></div>
+    <div class="logout translate" id="header-logout">log-out</div>
 </div>
 
-<div class="title">Return</div>
-<div class="subtitle">
-    If any of the tools need maintenance please check it on the list.<br/>
-    Continue and follow the instructions
-</div>
+<div class="title translate">return-screen</div>
+<div class="subtitle translate">maintenance-instr</div>
 
 <div id="itemlist"></div>
 
 <div class="footer gray">
-    <a href="home.html" class="go-back left-link">Go back</a>
-    <a href="drop.html" class="rounded-button green">Continue</a>
+    <a href="home.html" class="go-back left-link translate">go-back</a>
+    <a href="drop.html" class="rounded-button green translate ">continue</a>
 </div>
 
 </body>

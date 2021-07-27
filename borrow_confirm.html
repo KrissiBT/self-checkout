@@ -3,15 +3,16 @@
 <head>
 <script type="text/javascript" src="js/kiosk.js"></script>
 <script type="text/javascript" src="js/main.js"> </script>
+
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
 <link rel="stylesheet" href="css/borrow_confirm.css" type="text/css">
 <link rel="shortcut icon" href="#">
 
-<title>Borrow</title>
+<title>Munasafn</title>
 
 <script type="text/javascript">
-    addLoadEvent(function() {
+    addContGenFunction(function() {
         let kiosk = initKopaKiosk();
 
         StackedList.createList("itemList", "selected", true);
@@ -22,18 +23,18 @@
 
 <body>
 <div class="small header">
-    <div class="language">EN</div>
-    <div class="logout" id="header-logout">Log out</div>
+    <div id="language-switch"></div>
+    <div class="logout translate" id="header-logout">log-out</div>
 </div>
 <div class="content">
-    <div class="title">Borrow</div>
+    <div class="title translate">borrow</div>
     <div id="selected"></div>
     <div id="itemList"></div>
 </div>
 
 <div class="footer gray">
-    <a href="borrow.html" class="go-back left-link">Go back</a>
-    <a href="pickup.html" class="rounded-button green">Continue</a>
+    <a href="borrow.html" class="go-back left-link translate">go-back</a>
+    <a href="pickup.html" class="rounded-button green translate">continue</a>
 </div>
 
 </body>
