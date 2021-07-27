@@ -49,7 +49,7 @@ body
     height: 100px;
 }
 
-.header .language
+#language-switch
 {
     position: absolute;
     width: 50px;
@@ -62,9 +62,18 @@ body
     font-size: 16px;
     color: #0E837A;
 
-    background-image: url(../img/united-kingdom.png);
     background-repeat: no-repeat;
     background-position: right;
+}
+
+#language-switch.en
+{
+    background-image: url(../lang/en.png);
+}
+
+#language-switch.is
+{
+    background-image: url(../lang/is.png);
 }
 
 
