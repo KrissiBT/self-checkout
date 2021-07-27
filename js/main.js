@@ -3,6 +3,8 @@
 const kKopaKioskURL = "https://kopakioskprototype.myturn.com/library";
 const kLockerURL = "https://yettodefi.ne"
 
+let sContGenFuncs = null;
+
 function initKopaKiosk() {
     return Kiosk.getSessionKiosk(kKopaKioskURL);
 }
@@ -93,25 +95,40 @@ addLoadEvent(function()
             });
         }
     }
+
+    // Translate the page at loading
+    // then call all the content-generating functions (which might need the
+    // translator to be fully loaded to translate content)
+    Translator.initialise()
+        .then(() => {
+            Translator.translatePage();
+
+            if (sContGenFuncs !== null)
+            {
+                sContGenFuncs();
+            }
+        });
 });
 
-class Translator
+// Add a content-generating function to be executed when the page is loaded
+function addContGenFunction(pFunc)
 {
-    static _language = "EN";
-
-    static _month(pMonthIndex)
+    if (sContGenFuncs === null)
     {
-        let tMonths = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-
-        return tMonths[pMonthIndex];
+        sContGenFuncs = pFunc;
     }
-
-    static getDate(pDate)
+    else
     {
-        return pDate.day + " " + Translator._month(pDate.month) + " " + pDate.year;
+        let tOldFunc = sContGenFuncs;
+
+        sContGenFuncs = function()
+        {
+            tOldFunc();
+            pFunc();
+        }
     }
 }
+
 
 class ItemList
 {
@@ -172,9 +189,8 @@ class ItemList
         return document.getElementById(this._target);
     }
 
-    _selectItem(pID)
+    _updateSelection()
     {
-        this._selectedItems[pID] = this._elements[pID];
         Storage.store("selection", this._selectedItems);
 
         try
@@ -182,10 +198,20 @@ class ItemList
             if (this._counterID != "")
             {
                 document.getElementById(this._counterID).innerHTML =
-                        Object.keys(this._selectedItems).length + " selected";
+                        Translator.translate("selected", 
+                            Object.keys(this._selectedItems).length);
             }
         }
         catch (pErr){console.log(pErr);}
+    }
+
+    _selectItem(pID)
+    {
+        let tElement = document.getElementById(pID);
+        this._selectedItems[pID] = this._elements[pID];
+        tElement.classList.add("selected");
+
+        this._updateSelection();
     }
 
     itemClicked(pID)
@@ -210,7 +236,7 @@ class ItemList
             tElement.classList.remove("selected");
         }
 
-        this._selectItem(pID);
+        this._updateSelection();
     }
 
     addItem(pItem, pSelected = false)
@@ -257,7 +283,7 @@ class ItemList
         if (tDomElem !== null)
         {
             tDomElem.innerHTML = tDomElem.innerHTML +
-                    '<div class="message">' + pMessage + "</div>";
+                    '<div class="message translate">' + Translator.translate(pMessage) + "</div>";
         }
     }
 
@@ -396,21 +422,19 @@ class StackedList extends ItemList
 
                 let tHeader = document.createElement("div");
                 tHeader.classList.add(this._extraColumn.class);
-                tHeader.innerHTML = this._extraColumn.header;
+                tHeader.innerHTML = Translator.translate(this._extraColumn.header);
 
                 tHeaderRow.append(tHeader);
                 tListContainer.append(tHeaderRow);
             }
         }
 
-        super.addItem(pItem, pSelected);
-
         let tItemCount = this.getItemCount();
         this._idList.push(pItem["itemId"]);
 
         let tCounter = document.createElement("div");
         tCounter.classList.add("counter");
-        tCounter.innerHTML = tItemCount + ".";
+        tCounter.innerHTML = (tItemCount + 1) + ".";
 
         let tEntry = document.createElement("div");
         tEntry.classList.add("hollow-green");
@@ -429,7 +453,7 @@ class StackedList extends ItemList
         {
             let tSwitchElem = document.createElement("div");
             tSwitchElem.classList.add(this._extraColumn.class);
-            tSwitchElem.innerHTML = "NO";
+            tSwitchElem.innerHTML = Translator.translate("no").toUpperCase();
 
             tSwitchElem.addEventListener("click", function (event) {
                     let tElement = event.target;
@@ -455,6 +479,8 @@ class StackedList extends ItemList
         }
 
         tListContainer.append(tRow);
+
+        super.addItem(pItem, pSelected);
     }
 
     itemClicked(pID)
@@ -464,11 +490,11 @@ class StackedList extends ItemList
             let tText;
             if (!(pID in this._selectedItems))
             {
-                tText = "YES";
+                tText = "yes";
             }
             else
             {
-                tText = "NO";
+                tText = "no";
             }
 
             let tElement = document.getElementById(pID);
@@ -481,7 +507,7 @@ class StackedList extends ItemList
             let tSwitch = tElement.getElementsByClassName(this._extraColumn.class);
             if (tSwitch !== null && tSwitch.length == 1)
             {
-                tSwitch[0].innerHTML = tText;
+                tSwitch[0].innerHTML = Translator.translate(tText).toUpperCase();
             }
         }
 
@@ -512,7 +538,7 @@ class StackedList extends ItemList
 
         if (tHeader !== null && tHeader.length == 1)
         {
-            tHeader[0].innerHTML = this._extraColumn.header;
+            tHeader[0].innerHTML = Translator.translate(this._extraColumn.header);
         }
     }
 
@@ -549,7 +575,7 @@ class StackedList extends ItemList
         throw -1;
     }
 
-    _setNextItemActive(pInstruction)
+    _setNextItemActive(pInstructionStringID)
     {
         let tFormerIndex = this._activeItemIndex;
         let tNewIndex = ++this._activeItemIndex;
@@ -601,11 +627,11 @@ class StackedList extends ItemList
 
         let tSubTitle = document.createElement("div");
         tSubTitle.classList.add("shelf");
-        tSubTitle.innerHTML = "Shelf no." + tDoorID + " is now open"
+        tSubTitle.innerHTML = Translator.translate("shelf-open", tDoorID);
 
         let tInstruction = document.createElement("div");
         tInstruction.classList.add("instruction");
-        tInstruction.innerHTML = pInstruction;
+        tInstruction.innerHTML = Translator.translate(pInstructionStringID);
 
         tInstructionsDiv.append(tSubTitle);
         tInstructionsDiv.append(tInstruction);
@@ -616,12 +642,12 @@ class StackedList extends ItemList
 
     pickUpNextItem()
     {
-        return this._setNextItemActive("Please collect item and close door");
+        return this._setNextItemActive("collect-item");
     }
 
     returnNextItem()
     {
-        return this._setNextItemActive("Insert item inside the shelf and close to continue");
+        return this._setNextItemActive("return-item");
     }
 
     getActiveItem()
@@ -650,7 +676,7 @@ class StackedList extends ItemList
     static createReturnList(pListElementID, pCounterID = "", pUseSelection = false)
     {
         let tItemList = StackedList._createList(pListElementID, "");
-        tItemList._addColumn("need-maintenance", "Need maintenance?");
+        tItemList._addColumn("need-maintenance", "need-maintenance");
 
         if (pUseSelection)
         {
@@ -668,5 +694,175 @@ class StackedList extends ItemList
             tList._loadSelection();
         }
         return tList;
+    }
+}
+
+/*
+ Translator is a tool used to automatically translate all nodes in the
+ DOM that have the class 'translate'.
+
+ A JSON file with the language name (e.g. 'en.json') must exist in the `lang`
+ folder. Such file should use the string IDs that are used in lieu of the text
+ in the DOM elements.
+
+ The DOM element with the class "language-switch" will assigned the 2-letter
+ code for the current language.
+*/
+class Translator
+{
+    static _strings = null;
+    static _initialised = false;
+
+
+    static _clearVar(pKey)
+    {
+        window.sessionStorage.removeItem("myturn.translator." + pKey);
+    }
+
+    static _storeVar(pKey, pValue)
+    {
+        window.sessionStorage.setItem("myturn.translator." + pKey, 
+                JSON.stringify(pValue));
+    }
+
+    static _fetchVar(pKey)
+    {
+        let tValue = window.sessionStorage.getItem("myturn.translator." + pKey);
+
+        if (tValue === null)
+        {
+            return null;
+        }
+        else
+        {
+            return JSON.parse(tValue);
+        }
+    }
+
+    // Return a Promise, fulfilled upon parsing of the whole language package
+    static initialise()
+    {
+        let tLanguage = Translator._fetchVar("language");
+
+        if (tLanguage === null)
+        {
+            return Translator.setLanguage("is");
+        }
+        else
+        {
+            return Translator.setLanguage(tLanguage);
+        }
+    }
+
+    static _fetchStrings(pLanguage)
+    {
+        let tParams = {
+            method: "GET",
+            credentials: 'same-origin',
+            referrerPolicy: 'origin',
+            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        };
+
+        Translator._storeVar("language", pLanguage);
+
+        return fetch("lang/" + pLanguage + ".json", tParams)
+                .then(reply => {
+                    if (reply.status != 200)
+                    {
+                        throw reply.status;
+                    }
+
+                    return reply.json()
+                        .then(pJson => {
+                            Translator._strings = pJson;
+                            Translator._storeVar("strings", pJson);
+                            Translator._initialised = true;
+                        });
+                })
+                .catch(pError => {
+                    debugger;
+                    console.log(pError);
+                    Translator._storeVar("language", null);
+                    Translator._storeVar("strings", null);
+                });
+    }
+
+    // Return a Promise upon parsing of the whole language file
+    static setLanguage(pLanguage)
+    {
+        let tLanguage = Translator._fetchVar("language");
+
+        if (tLanguage !== pLanguage)
+        {
+            return Translator._fetchStrings(pLanguage);
+        }
+
+        let tStrings = Translator._fetchVar("strings");
+        if (tStrings === null)
+        {
+            return Translator._fetchStrings(pLanguage);
+        }
+
+        Translator._strings = tStrings;
+        // Return succeeding Promise
+        return new Promise((resolve, reject) => {
+            resolve(true);
+        });
+    }
+
+    // Any extra parameter will be inserted in the {} placeholders present in
+    // the string
+    static translate(pStringID)
+    {
+        if (Translator._strings === null)
+        {
+            return "";
+        }
+        else if (!(pStringID in Translator._strings))
+        {
+            return "missing " + pStringID;
+        }
+        else
+        {
+            let tString = Translator._strings[pStringID];
+
+            for (let i = 1; i < arguments.length; i++)
+            {
+                tString = tString.replace("{" + i + "}", arguments[i]);
+            }
+            return tString;
+        }
+    }
+
+
+    static getDate(pDate)
+    {
+        let tMonths = ["january", "february", "march", "april", "may", "june",
+            "july", "august", "september", "october", "november", "december"];
+
+        let tMonth = Translator.translate(tMonths[pDate.month]);
+
+        return Translator.translate("date-format").replace("{day}", pDate.day)
+                .replace("{month}", tMonth).replace("{year}", pDate.year);
+    }
+
+    static translatePage()
+    {
+        let tElements = document.getElementsByClassName("translate");
+        
+        for (var i=0, len=tElements.length|0; i<len; i=i+1|0)
+        {
+            let tElement = tElements[i];
+            tElement.innerHTML = Translator.translate(tElement.innerHTML);
+        }
+
+        let tSwitch = document.getElementById("language-switch");
+
+        if (tSwitch !== null)
+        {
+            let tLanguage = Translator._fetchVar("language");
+            tSwitch.className = tLanguage;
+            tSwitch.innerHTML = tLanguage.toUpperCase();
+        }
     }
 }
