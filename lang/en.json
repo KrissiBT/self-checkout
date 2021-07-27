@@ -1,0 +1,66 @@
+{
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December",
+    "date-format": "{day} {month} {year}",
+
+    "back-home-screen": "Back to home screen",
+    "borrow": "Borrow",
+    "borrow-screen": "Borrow - Hit C to mimic door closing",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "go-back": "Go back",
+    "log-in": "Log in",
+    "log-out": "Log out",
+    "no": "No",
+    "pick-up": "Pick up",
+    "return": "Return",
+    "return-screen": "Return - Hit C to mimic door closing",
+    "sign-up": "Sign up",
+    "start": "Start",
+    "yes": "Yes",
+
+    "index-quote": "The more we share the more we have",
+    "not-member": "Not a member? <a href=\"signup.html\">Sign up</a>",
+    "password": "Password",
+    "forgot-password": "Forgot password?",
+    "accept-terms": "By clicking \"Continue\" I accept the <a href=\"terms.html\">Terms and Conditions</a>",
+
+    "reset-password": "Reset password",
+    "reset-instructions": "Please go to <span class=\"link\">www.munasafn.is</span> on your own device to reset your password.",
+
+    "oops": "Ups!",
+    "something-wrong": "Something went wrong.<br />Please try again later",
+    "need-help": "Need help?",
+
+    "no-selected": "0 selected",
+    "selected": "{1} selected",
+    "item-selected": "{1} item(s) selected",
+
+    "shelf-open": "Shelf no.{1} is now open",
+
+    "need-maintenance": "Need maintenance?",
+    "collect-item": "Please collect item and close to continue",
+    "return-item": "Insert item inside the shelf and close to continue",
+
+    "thank-you": "Thank you",
+    "all-tools-back": "All tools are back at home ready to be shared with others.",
+
+    "contact-us": "Please contact us:<br />info@reykjaviktoollibrary.com",
+
+    "maintenance-instr": "If any of the tools need maintenance please check it on the list.<br/>Continue and follow the instructions",
+    "sign-up-instr": "Please go to <span class=\"link\">www.munasafn.is</span> on your own device to sign up.",
+
+    "terms": "Terms and Conditions",
+    "thankyou-return-items": "Please return all items due"
+}

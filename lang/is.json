@@ -1,0 +1,66 @@
+{
+    "january": "Janúar",
+    "february": "Febrúar",
+    "march": "Mars",
+    "april": "Apríl",
+    "may": "Maí",
+    "june": "Júni",
+    "july": "Júlí",
+    "august": "Ágúst",
+    "september": "September",
+    "october": "Oktober",
+    "november": "Nóvember",
+    "december": "Desember",
+    "date-format": "{day}.{month} {year}",
+
+    "back-home-screen": "Aftur á upphafssíðu",
+    "borrow": "Fá lánað",
+    "borrow-screen": "Fá lánað",
+    "cancel": "Hætta við",
+    "close": "Loka",
+    "continue": "Áfram",
+    "go-back": "Fara til baka",
+    "log-in": "Innskráning",
+    "log-out": "Útskráning",
+    "no": "Nei",
+    "pick-up": "Sækja",
+    "return": "Skil",
+    "return-screen": "Skila",
+    "sign-up": "Innskráning",
+    "start": "Byrja",
+    "yes": "Já",
+
+    "index-quote": "Því meira sem við deilum, því meira við eigum.",
+    "not-member": "Ekki meðlimur? <a href=\"signup.html\">Skráðu þig </a>",
+    "password": "Lykilorð",
+    "forgot-password": "Gleymt lykilorð?",
+    "accept-terms": "Með því að ýta á \"Áfram\" samþykki ég <a href=\"terms.html\">skilyrði og skilmála</a>",
+
+    "reset-password": "Breyta lykilorði",
+    "reset-instructions": "Vinsamlega farðu á slóðina <span class=\"link\">www.munasafn.is</span> á þínu elgin tæki til þess að breyta lykilorði.",
+
+    "oops": "Úps!",
+    "something-wrong": "Eitthvað fór úrskeiðis.<br />Vinsamlega reyndu aftur síðar",
+    "need-help": "Þarftu hjálp?",
+
+    "no-selected": "0 valið",
+    "selected": "{1} valið",
+    "item-selected": "{1} hlutir valdir",
+
+    "shelf-open": "Hilla númer {1} er nú opin",
+
+    "need-maintenance": "Þarfnast viðhalds??",
+    "collect-item": "Vinsamlega náðu í hlutinn og lokaðu til að halda áfram",
+    "return-item": "Settu hlutinn á hilluna og lokaðu til þess að halda áfram",
+
+    "thank-you": "Takk fyrir",
+    "all-tools-back": "Öllum verkfærum hefur verið skilað og aðrir geta nú fengið þau lánuð.",
+
+    "contact-us": "Vinsamlega hafðu samband:<br />info@reykjaviktoollibrary.com",
+
+    "maintenance-instr": "Ef einhver af verkfærunum þarfnast viðhalds vinsamlega merktu við það á listanum. Haltu áfram og fylgdu leiðbeiningunum.",
+    "sign-up-instr": "Vinsamlega farðu á slóðina <span class=\"link\">www.munasafn.is</span> í þínu eigin tæki.",
+
+    "terms": "Skilyrði og skilmálar",
+    "thankyou-return-items": "Vinsamlega skilaðu hlutunum þann"
+}
