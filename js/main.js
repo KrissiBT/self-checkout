@@ -697,6 +697,8 @@ class StackedList extends ItemList
     }
 }
 
+const sLanguages = [ "en", "is" ];
+
 /*
  Translator is a tool used to automatically translate all nodes in the
  DOM that have the class 'translate'.
@@ -705,14 +707,12 @@ class StackedList extends ItemList
  folder. Such file should use the string IDs that are used in lieu of the text
  in the DOM elements.
 
- The DOM element with the class "language-switch" will assigned the 2-letter
+ The DOM element with the id "lang-switch" will assigned the 2-letter
  code for the current language.
 */
 class Translator
 {
     static _strings = null;
-    static _initialised = false;
-
 
     static _clearVar(pKey)
     {
@@ -776,18 +776,20 @@ class Translator
                         .then(pJson => {
                             Translator._strings = pJson;
                             Translator._storeVar("strings", pJson);
-                            Translator._initialised = true;
+
+                            return true;
                         });
                 })
                 .catch(pError => {
                     debugger;
                     console.log(pError);
-                    Translator._storeVar("language", null);
-                    Translator._storeVar("strings", null);
+                    Translator._clearVar("language");
+                    Translator._clearVar("strings");
                 });
     }
 
-    // Return a Promise upon parsing of the whole language file
+    // Return a Promise completing upon parsing of the whole language file
+    // The promise returns true if the language has changed, false otherwise
     static setLanguage(pLanguage)
     {
         let tLanguage = Translator._fetchVar("language");
@@ -804,9 +806,10 @@ class Translator
         }
 
         Translator._strings = tStrings;
-        // Return succeeding Promise
+        
+        // Return a Promise returning false
         return new Promise((resolve, reject) => {
-            resolve(true);
+            resolve(false);
         });
     }
 
@@ -846,6 +849,68 @@ class Translator
                 .replace("{month}", tMonth).replace("{year}", pDate.year);
     }
 
+    static fillLangIcon(pDomElement, pLanguage)
+    {
+        pDomElement.className = "lang-icon";
+        pDomElement.classList.add(pLanguage);
+        pDomElement.innerHTML = pLanguage.toUpperCase();
+    }
+
+    static closePopup()
+    {
+        let tPopup = document.getElementById("lang-popup");
+        if (tPopup !== null)
+        {
+            tPopup.remove();
+        }
+
+        let tBackdrop = document.getElementById("backdrop");
+        if (tBackdrop !== null)
+        {
+            tBackdrop.remove();
+        }
+    }
+
+    static openLangPopup(event)
+    {
+        // Create a backdrop to catch the clicks
+        let tBackdrop = document.createElement("div");
+        tBackdrop.id = "backdrop";
+        tBackdrop.addEventListener("click", function() {
+                debugger;
+                setTimeout(Translator.closePopup(), 50);
+            });
+
+        document.body.append(tBackdrop);
+
+        // Create the popup
+        let tPopup = document.createElement("div");
+        tPopup.id = "lang-popup";
+
+        for (let i = 0; i < sLanguages.length; i++)
+        {
+            let tLang = document.createElement("div");
+            Translator.fillLangIcon(tLang, sLanguages[i]);
+
+            tLang.addEventListener("click", function() {
+                Translator.setLanguage(sLanguages[i])
+                    .then(pChanged => {
+                        if (pChanged)
+                        {
+                            window.location.reload(true);
+                        }
+                        else
+                        {
+                            setTimeout(Translator.closePopup(), 50);
+                        }
+                    });
+            }, true);
+            tPopup.append(tLang);
+        }
+
+        document.body.append(tPopup);
+    }
+
     static translatePage()
     {
         let tElements = document.getElementsByClassName("translate");
@@ -856,13 +921,14 @@ class Translator
             tElement.innerHTML = Translator.translate(tElement.innerHTML);
         }
 
-        let tSwitch = document.getElementById("language-switch");
+        let tSwitch = document.getElementById("lang-switch");
 
         if (tSwitch !== null)
         {
             let tLanguage = Translator._fetchVar("language");
-            tSwitch.className = tLanguage;
-            tSwitch.innerHTML = tLanguage.toUpperCase();
+            Translator.fillLangIcon(tSwitch, tLanguage);
+
+            tSwitch.addEventListener("click", Translator.openLangPopup);
         }
     }
 }
