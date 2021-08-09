@@ -662,7 +662,7 @@ class StackedList extends ItemList
 
     static createLockerList(pListElementID, pCounterID = "", pUseSelection = true)
     {
-        let tList = StackedList._createList(pListElementID, "");
+        let tList = StackedList._createList(pListElementID, pCounterID);
         tList._addColumn("locker", "");
 
         if (pUseSelection)
