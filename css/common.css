@@ -157,7 +157,7 @@ a
 
 .link
 {
-     color: ##0E837A;
+    color: #0E837A;
 }
 
 .title
@@ -176,6 +176,11 @@ a
     margin-left: 8px;
     width: 100%;
     height: 60px;
+}
+
+.subtitle
+{
+    font-size: 26px;
 }
 
 .rounded-button
