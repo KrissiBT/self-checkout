@@ -2,6 +2,7 @@
 
 const kKopaKioskURL = "https://kopakioskprototype.myturn.com/library";
 const kLockerURL = "https://yettodefi.ne"
+const kNotificationEmail = "sebastien.nouat@gmail.com";
 
 let sContGenFuncs = null;
 
@@ -167,21 +168,28 @@ class ItemList
         return document.getElementById(ItemList.genId(pType, pID));
     }
 
-    _loadSelection()
+    _initSelection(pUseExistingSelection)
     {
-        try
+        if (pUseExistingSelection)
         {
-            let tSelection = Storage.fetch("selection");
-
-            if (tSelection !== null)
+            try
             {
-                Object.values(tSelection).forEach(tItem =>
+                let tSelection = Storage.fetch("selection");
+
+                if (tSelection !== null)
                 {
-                    this.addItem(tItem, true);
-                });
+                    Object.values(tSelection).forEach(tItem =>
+                    {
+                        this.addItem(tItem, true);
+                    });
+                }
             }
+            catch (pErr) {console.log(pErr);}
         }
-        catch (pErr) {console.log(pErr);}
+        else
+        {
+            ItemList.clearSelection();
+        }
     }
 
     getTargetElement()
@@ -258,6 +266,18 @@ class ItemList
         return this._itemCount;
     }
 
+    itemIsSelected(pID)
+    {
+        if (this._selectedItems !== null)
+        {
+            return (pID in this._selectedItems);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     getItems()
     {
         return this._elements;
@@ -313,10 +333,7 @@ class GridList extends ItemList
         let tList = new GridList(pListElementID, pCounterID);
         ItemList._instance = tList;
 
-        if (pUseSelection)
-        {
-            tList._loadSelection();
-        }
+        tList._initSelection(pUseSelection);
 
         return tList;
     }
@@ -665,10 +682,7 @@ class StackedList extends ItemList
         let tList = StackedList._createList(pListElementID, pCounterID);
         tList._addColumn("locker", "");
 
-        if (pUseSelection)
-        {
-            tList._loadSelection();
-        }
+        tList._initSelection(pUseSelection);
 
         return tList;
     }
@@ -678,22 +692,57 @@ class StackedList extends ItemList
         let tItemList = StackedList._createList(pListElementID, "");
         tItemList._addColumn("need-maintenance", "need-maintenance");
 
-        if (pUseSelection)
-        {
-            tItemList._loadSelection();
-        }
+        tItemList._initSelection(pUseSelection);
+        
         return tItemList;
     }
 
     static createList(pListElementID, pCounterID = "", pUseSelection = false)
     {
         let tList = StackedList._createList(pListElementID, pCounterID);
-
-        if (pUseSelection)
-        {
-            tList._loadSelection();
-        }
+        tList._initSelection(pUseSelection);
         return tList;
+    }
+}
+
+class File
+{
+    static _read(pRelativePath)
+    {
+        let tParams = {
+            method: "GET",
+            credentials: 'same-origin',
+            referrerPolicy: 'origin',
+            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        };
+
+        return fetch(pRelativePath);
+    }
+
+    static readJson(pRelativePath)
+    {
+        return File._read(pRelativePath)
+            .then(reply => {
+                if (reply.status != 200)
+                {
+                    throw reply.status;
+                }
+
+                return reply.json();
+            });
+    }
+
+    static readText(pRelativePath)
+    {
+        return File._read(pRelativePath)
+            .then(reply => {
+                if (reply.status != 200)
+                {
+                    throw reply.status;
+                }
+
+                return reply.text();
+            });
     }
 }
 
@@ -756,36 +805,21 @@ class Translator
 
     static _fetchStrings(pLanguage)
     {
-        let tParams = {
-            method: "GET",
-            credentials: 'same-origin',
-            referrerPolicy: 'origin',
-            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-        };
-
         Translator._storeVar("language", pLanguage);
 
-        return fetch("lang/" + pLanguage + ".json", tParams)
-                .then(reply => {
-                    if (reply.status != 200)
-                    {
-                        throw reply.status;
-                    }
+        return File.readJson("lang/" + pLanguage + ".json")
+            .then(pJson => {
+                Translator._strings = pJson;
+                Translator._storeVar("strings", pJson);
 
-                    return reply.json()
-                        .then(pJson => {
-                            Translator._strings = pJson;
-                            Translator._storeVar("strings", pJson);
-
-                            return true;
-                        });
-                })
-                .catch(pError => {
-                    debugger;
-                    console.log(pError);
-                    Translator._clearVar("language");
-                    Translator._clearVar("strings");
-                });
+                return true;
+            })
+            .catch(pError => {
+                debugger;
+                console.log(pError);
+                Translator._clearVar("language");
+                Translator._clearVar("strings");
+            });
     }
 
     // Return a Promise completing upon parsing of the whole language file
@@ -929,5 +963,59 @@ class Translator
 
             tSwitch.addEventListener("click", Translator.openLangPopup);
         }
+    }
+}
+
+class Notify
+{
+    static _pendingEmails = 0;
+
+    static _loadTemplate(pTemplate, pData)
+    {
+        return File.readText("mail/" + pTemplate + ".html")
+            .then(pEmailTemplate => {
+                let tFilled = pEmailTemplate;
+
+                for (let tKey in pData)
+                {
+                    tFilled = tFilled.replace("{" + tKey + "}", pData[tKey]);
+                }
+                return tFilled;
+            });
+    }
+
+    static _sendEmail(pSubject, pEmail, pRecipient)
+    {
+        // Call function from stmp.js
+        Notify._pendingEmails += 1;
+        return Email.send({
+                SecureToken: "67b68ddc-42de-4f4b-8b47-4f09f1793180",
+                To : pRecipient,
+                From : "no-reply@hringrasarsetur.org",
+                Subject : pSubject,
+                Body : pEmail
+            })
+            .then(() => {
+                Notify._pendingEmails -= 1;
+                console.log("email sent");
+                console.log("about to pick up next item");
+            })
+            .catch(error => console.log(error));
+    }
+
+    static toolNeedsMaintenance(pToolID, pToolName)
+    {
+        let tData = {"tool-name": pToolName, "tool-id": pToolID};
+        return Notify._loadTemplate("maintenance", tData)
+            .then(pEmail => {
+                Notify._sendEmail("[Maintenance] " + pToolName + " needs maintenance",
+                        pEmail, kNotificationEmail);
+            });
+    }
+
+    static allEmailsSent()
+    {
+
+        return (Notify._pendingEmails == 0);
     }
 }
