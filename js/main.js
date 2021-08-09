@@ -716,18 +716,18 @@ class Translator
 
     static _clearVar(pKey)
     {
-        window.sessionStorage.removeItem("myturn.translator." + pKey);
+        window.sessionStorage.removeItem("munasafn.translator." + pKey);
     }
 
     static _storeVar(pKey, pValue)
     {
-        window.sessionStorage.setItem("myturn.translator." + pKey, 
+        window.sessionStorage.setItem("munasafn.translator." + pKey, 
                 JSON.stringify(pValue));
     }
 
     static _fetchVar(pKey)
     {
-        let tValue = window.sessionStorage.getItem("myturn.translator." + pKey);
+        let tValue = window.sessionStorage.getItem("munasafn.translator." + pKey);
 
         if (tValue === null)
         {
@@ -877,7 +877,6 @@ class Translator
         let tBackdrop = document.createElement("div");
         tBackdrop.id = "backdrop";
         tBackdrop.addEventListener("click", function() {
-                debugger;
                 setTimeout(Translator.closePopup(), 50);
             });
 

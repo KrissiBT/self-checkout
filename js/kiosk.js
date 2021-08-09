@@ -143,6 +143,8 @@ class NetworkOp
 
 class Kiosk extends NetworkOp
 {
+    static _keys = ["token", "refresh_token", "cart" ];
+
     constructor(pURL, pToken, pRefreshToken){
         super(pURL);
         this._token = pToken;
@@ -163,22 +165,25 @@ class Kiosk extends NetworkOp
 
     static _clearSessionVar()
     {
-        Storage.clear();
+        for (let tKey in Kiosk._keys)
+        {
+            Kiosk._clearVar(tKey);
+        }
     }
 
     static _clearVar(pKey)
     {
-        Storage.remove("myturn.kiosk." + pKey);
+        Storage.remove("munasafn.kiosk." + pKey);
     }
 
     static _storeVar(pKey, pValue)
     {
-        Storage.store("myturn.kiosk." + pKey, pValue);
+        Storage.store("munasafn.kiosk." + pKey, pValue);
     }
 
     static _fetchVar(pKey)
     {
-        return Storage.fetch("myturn.kiosk." + pKey);
+        return Storage.fetch("munasafn.kiosk." + pKey);
     }
 
     _processLogin(pResponse)
