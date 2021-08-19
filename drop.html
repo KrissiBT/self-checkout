@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script type="text/javascript" src="js/smtp.js"></script>
 <script type="text/javascript" src="js/kiosk.js"></script>
 <script type="text/javascript" src="js/main.js"> </script>
 
@@ -31,9 +32,26 @@
 
         sKiosk.commitCart()
             .then(() => {
-                console.log("about to pick up next item");
+                if (tCurrentList.itemIsSelected(tActiveItem["itemId"]))
+                {
+                    Notify.toolNeedsMaintenance(tActiveItem["itemId"], 
+                        tActiveItem["name"]);
+                }
+                
                 returnNextItem();
             });
+    }
+
+    function checkCompletion()
+    {
+        if (Notify.allEmailsSent())
+        {
+            UIGoToPage("thankyou");
+        }
+        else
+        {
+            setTimeout(checkCompletion, 500);
+        }
     }
 
     function returnNextItem()
@@ -44,7 +62,7 @@
         // All items returned, switch to next page
         if (tActiveItem === null)
         {
-            UIGoToPage("thankyou");
+            checkCompletion();
         }
         else
         {
