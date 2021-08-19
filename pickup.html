@@ -16,6 +16,10 @@
     let sKiosk = initKopaKiosk();
     let sLocker = initLocker();
 
+    // Make sure not to allow automatic logout, as the locker might be in an
+    // undefined state (door open)
+    Kiosk.allowAutoLogout(false);
+
     let sReturnDate = "";
 
     function doorClosed()

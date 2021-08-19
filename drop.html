@@ -17,6 +17,10 @@
     let sKiosk = initKopaKiosk();
     let sLocker = initLocker();
 
+    // Make sure not to allow automatic logout, as the locker might be in an
+    // undefined state (door open)
+    Kiosk.allowAutoLogout(false);
+
     function doorClosed()
     {
         let tCurrentList = StackedList.getItemList();
