@@ -9,12 +9,13 @@
 <link rel="shortcut icon" href="#">
 
 <script type="text/javascript">
-    let kiosk = initKopaKiosk();
-
+    UIInitKiosk();
+    UIInitAutoLogout();
+    
     addContGenFunction(
         function ()
         {
-            kiosk.userHasLoans()
+            Kiosk.getSessionKiosk().userHasLoans()
                 .then(pHasLoans => {
                     if (!pHasLoans)
                     {

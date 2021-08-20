@@ -12,15 +12,17 @@
 <title>Munasafn</title>
 
 <script type="text/javascript">
+    UIInitKiosk();
+    UIInitAutoLogout();
+    
     addContGenFunction(function() {
-        let kiosk = initKopaKiosk();
         let tList = GridList.createList("itemlist", "selected");
         
-        kiosk.listItems()
+        Kiosk.getSessionKiosk().listItems()
             .then(pItems => {
                 if (pItems.length == 0)
                 {
-                    tList.showEmpty();
+                    tList.showEmpty("no-item-found");
                 }
                 else
                 {

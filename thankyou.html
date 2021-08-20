@@ -12,6 +12,9 @@
 <title>Munasafn</title>
 
 <script type="text/javascript">
+    UIInitKiosk();
+    UIInitAutoLogout();
+    
     addContGenFunction(function (){
         let tParamList = new URLSearchParams(window.location.search);
         let tDate = tParamList.get("returnDate");

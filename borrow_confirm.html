@@ -12,9 +12,10 @@
 <title>Munasafn</title>
 
 <script type="text/javascript">
+    UIInitKiosk();
+    UIInitAutoLogout();
+    
     addContGenFunction(function() {
-        let kiosk = initKopaKiosk();
-
         StackedList.createList("itemList", "selected", true);
     });
 
