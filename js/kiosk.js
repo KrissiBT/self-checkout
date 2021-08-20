@@ -46,6 +46,20 @@ class Storage
         Storage.remove(this._prefix + pKey);
     }
 
+    // Clear all the items stored for this Storage
+    clear()
+    {
+        for (let i = localStorage.length - 1; i >= 0 ; i--)
+        {
+            let tKey = window.sessionStorage.key(i);
+
+            if (tKey.startsWith(this._prefix))
+            {
+                window.sessionStorage.removeItem(tKey);
+            }
+        }
+    }
+
     static store(pKey, pValue)
     {
         window.sessionStorage.setItem(pKey, JSON.stringify(pValue));
@@ -68,11 +82,6 @@ class Storage
     static remove(pKey)
     {
         window.sessionStorage.removeItem(pKey);
-    }
-
-    static clear()
-    {
-        window.sessionStorage.clear();
     }
 }
 
@@ -178,6 +187,7 @@ class NetworkOp
 class Kiosk extends NetworkOp
 {
     static _keys = ["token", "refresh_token", "cart"];
+    static _storage = new Storage("munasafn.kiosk");
 
     constructor(pURL, pToken, pRefreshToken){
         super(pURL);
@@ -190,8 +200,8 @@ class Kiosk extends NetworkOp
         if (isEmpty(Kiosk._session))
         {
             Kiosk._session = new Kiosk(pURL,
-                        Kiosk._fetchVar("token"),
-                        Kiosk._fetchVar("refresh_token"));
+                        Kiosk._storage.fetch("token"),
+                        Kiosk._storage.fetch("refresh_token"));
         }
     }
 
@@ -205,42 +215,20 @@ class Kiosk extends NetworkOp
         return Kiosk._session;
     }
 
-    static _clearSessionVar()
-    {
-        for (let tKey in Kiosk._keys)
-        {
-            Kiosk._clearVar(tKey);
-        }
-    }
-
-    static _clearVar(pKey)
-    {
-        Storage.remove("munasafn.kiosk." + pKey);
-    }
-
-    static _storeVar(pKey, pValue)
-    {
-        Storage.store("munasafn.kiosk." + pKey, pValue);
-    }
-
-    static _fetchVar(pKey)
-    {
-        return Storage.fetch("munasafn.kiosk." + pKey);
-    }
-
     _processLogin(pResponse)
     {
         if (pResponse.ok)
         {
             return pResponse.json()
                 .then(data => {
-                    Kiosk._storeVar("token", data["access_token"]);
-                    Kiosk._storeVar("refresh_token", data["refresh_token"]);
+                    Kiosk._storage.store("token", data["access_token"]);
+                    Kiosk._storage.store("refresh_token", data["refresh_token"]);
+                    Kiosk._storage.store("user", data["membership"]);
+                    Kiosk._storage.store("admin_user", data["is_admin"]);
+
                     AutoLogout.setLogged(true);
                     AutoLogout.allowAutoLogout(true);
                     AutoLogout.checkLogout();
-                    Kiosk._storeVar("user", data["membership_type"]);
-                    Kiosk._storeVar("admin_user", data["is_admin"]);
 
                     this._token = data["access_token"];
                     this._refresh_token = data["refresh_token"];
@@ -259,7 +247,7 @@ class Kiosk extends NetworkOp
     {
         // Consider existing token now invalid
         this._token = null;
-        Kiosk._clearVar("token");
+        Kiosk._storage.remove("token");
 
         return this._postRequest("oauth/access_token",
                     {grant_type: "refresh_token", refresh_token: this._refresh_token}, "form")
@@ -332,7 +320,7 @@ class Kiosk extends NetworkOp
     login(pUsername, pPassword)
     {
         // First clear all previous login info
-        Kiosk._clearSessionVar();
+        Kiosk._storage.clear();
 
         return this._postRequest("api/login",
                 {"username": pUsername, "password": pPassword})
@@ -343,7 +331,7 @@ class Kiosk extends NetworkOp
 
     logout()
     {
-        Kiosk._storeVar('token', "");
+        Kiosk._storage.store('token', "");
         AutoLogout.setLogged(false);
         return this._postRequest("api/logout", {}, "empty")
             .then(data => {},
@@ -363,7 +351,7 @@ class Kiosk extends NetworkOp
                 {
                     return response.json()
                         .then(pCart => {
-                            Kiosk._storeVar("cart", pCart);
+                            Kiosk._storage.store("cart", pCart);
                         });
                 }
             });
@@ -372,7 +360,7 @@ class Kiosk extends NetworkOp
     // Return promise
     loadCart()
     {
-        let tCart = Kiosk._fetchVar("cart");
+        let tCart = Kiosk._storage.fetch("cart");
         if (tCart === null)
         {
             return this._getRequest("api/v1.1/self-checkout/carts")
@@ -423,7 +411,7 @@ class Kiosk extends NetworkOp
             .then(response => {
                 return response.json()
                         .then(pCart => {
-                            Kiosk._storeVar("cart", pCart);
+                            Kiosk._storage.store("cart", pCart);
                         });
             })
             .catch(error => {
@@ -434,7 +422,7 @@ class Kiosk extends NetworkOp
 
     getCurrentCartID(pID)
     {
-        let tCart = Kiosk._fetchVar("cart");
+        let tCart = Kiosk._storage.fetch("cart");
 
         if (tCart === null)
         {
@@ -506,10 +494,9 @@ class Kiosk extends NetworkOp
 
     userCanBorrow()
     {
-        debugger;
-        let tUserInfo = Kiosk.fetchVar("membership_type");
+        let tUserInfo = Kiosk._storage.fetch("user");
 
-        return tUserInfo["may_borrow"];
+        return tUserInfo["may_borrow"] && tUserInfo["may_use_kiosk"];
     }
 
     // Return a list of items
@@ -585,7 +572,7 @@ class Kiosk extends NetworkOp
                     .then(pCart => {
                         // New cart state returned, store it
                         console.log("borrowItem finished");
-                        return Kiosk._storeVar("cart", pCart);
+                        return Kiosk._storage.store("cart", pCart);
                     });
                 });
     }
@@ -594,7 +581,7 @@ class Kiosk extends NetworkOp
     {
         this.loadCart()
             .then(() => {
-                let tCart = Kiosk._fetchVar("cart");
+                let tCart = Kiosk._storage.fetch("cart");
 
                 let tLoanID = null;
                 for (let tLoan of tCart.outstandingLoans)
@@ -626,7 +613,7 @@ class Kiosk extends NetworkOp
                     .then(pCart => {
                         // New cart state returned, store it
                         console.log("returnItem finished");
-                        return Kiosk._storeVar("cart", pCart);
+                        return Kiosk._storage.store("cart", pCart);
                     });
 
             });
@@ -643,14 +630,14 @@ class Kiosk extends NetworkOp
                 if (response.ok)
                 {
                     // Cart converted and deleted, remove from Object
-                    Kiosk._storeVar("cart", null);
+                    Kiosk._storage.store("cart", null);
                     return true;
                 }
                 else
                 {
                     debugger;
                     // Cart converted and deleted, remove from Object
-                    Kiosk._clearVar("cart");
+                    Kiosk._storage.remove("cart");
                     UIReportError(response);
                     throw response.status;
                 }
@@ -664,7 +651,7 @@ class Kiosk extends NetworkOp
     commitCheckouts()
     {
         let tCartID = this.getCurrentCartID();
-        let tCart = Kiosk._fetchVar("cart");
+        let tCart = Kiosk._storage.fetch("cart");
 
         if (!("checkouts" in tCart) || tCart.checkouts.length === 0 ||
                     tCart.checkouts[0].committed)
@@ -771,7 +758,7 @@ class Kiosk extends NetworkOp
                 }
                 else
                 {
-                    return Kiosk._clearVar("cart");
+                    return Kiosk._storage.remove("cart");
                 }
             });
     }
@@ -1575,10 +1562,11 @@ class StackedList extends ItemList
 
 class AutoLogout
 {
+    static _storage = new Storage("munasafn.autologout");
+
     static initialise(pTimeoutInSeconds, pLogoutCallback)
     {
         AutoLogout._logout_cb = pLogoutCallback;
-        AutoLogout._storage = new Storage("munasafn.autologout");
         AutoLogout._initialised = true;
         AutoLogout._timeout = pTimeoutInSeconds * 1000;
 
