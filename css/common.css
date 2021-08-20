@@ -149,10 +149,10 @@ body
     cursor: pointer;
 }
 
-a
+a, a:visited
 {
     text-decoration-line: underline;
-    color: ##0E837A;
+    color: #0E837A;
 }
 
 .link
