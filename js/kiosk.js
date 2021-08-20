@@ -239,6 +239,8 @@ class Kiosk extends NetworkOp
                     AutoLogout.setLogged(true);
                     AutoLogout.allowAutoLogout(true);
                     AutoLogout.checkLogout();
+                    Kiosk._storeVar("user", data["membership_type"]);
+                    Kiosk._storeVar("admin_user", data["is_admin"]);
 
                     this._token = data["access_token"];
                     this._refresh_token = data["refresh_token"];
@@ -500,6 +502,14 @@ class Kiosk extends NetworkOp
         {
             return this._userHasLoans();
         }
+    }
+
+    userCanBorrow()
+    {
+        debugger;
+        let tUserInfo = Kiosk.fetchVar("membership_type");
+
+        return tUserInfo["may_borrow"];
     }
 
     // Return a list of items

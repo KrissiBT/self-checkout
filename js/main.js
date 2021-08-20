@@ -66,7 +66,7 @@ function UIInitLocker()
 function UIInitAutoLogout()
 {
     // Set the timeout to 2 minutes
-    AutoLogout.initialise(10, UILogout);
+    AutoLogout.initialise(120, UILogout);
 }
 
 function addLoadEvent(func)
