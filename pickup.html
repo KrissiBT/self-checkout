@@ -12,13 +12,13 @@
 <title>Munasafn</title>
 
 <script type="text/javascript">
-
-    let sKiosk = initKopaKiosk();
-    let sLocker = initLocker();
-
+    UIInitKiosk();
+    UIInitLocker();
+    UIInitAutoLogout();
+    
     // Make sure not to allow automatic logout, as the locker might be in an
     // undefined state (door open)
-    Kiosk.allowAutoLogout(false);
+    AutoLogout.allowAutoLogout(false);
 
     let sReturnDate = "";
 
@@ -35,7 +35,7 @@
             return;
         }
 
-        sKiosk.commitCart()
+        Kiosk.getSessionKiosk().commitCart()
             .then(() => {
                 console.log("about to pick up next item");
                 pickUpNextItem();
@@ -54,15 +54,15 @@
         }
         else
         {
-            sLocker.openItemDoor(tActiveItem.itemId)
+            Locker.getSessionLocker().openItemDoor(tActiveItem.itemId)
                 .then(() => {
                     sReturnDate = Translator.getDate(Kiosk.getReturnDate(tActiveItem));
 
-                    return sKiosk.borrowItem(tActiveItem.itemId);
+                    Kiosk.getSessionKiosk().borrowItem(tActiveItem.itemId);
                 })
                 .then(() => {
                     console.log("Watching door!!!");
-                    sLocker.watchItemDoorStatus(tActiveItem.itemId, doorClosed);
+                    Locker.getSessionLocker().watchItemDoorStatus(tActiveItem.itemId, doorClosed);
                 })
                 .catch(pError => {
                     debugger;
@@ -75,7 +75,7 @@
     addContGenFunction(function() {
         let tList = StackedList.createLockerList("itemList", "selected", true);
 
-        sLocker.loadMap()
+        Locker.getSessionLocker().loadMap()
                 .then(pMap => {
                     tList.setLockerMap(pMap);
                     pickUpNextItem();

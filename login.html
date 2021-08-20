@@ -8,21 +8,22 @@
 
 <link rel="shortcut icon" href="#">
 <script type="text/javascript">
-    let tKiosk = initKopaKiosk();
-
+    UIInitKiosk();
+    UIInitAutoLogout();
+    
     const login = () => {
         let tNextPage = "oops";
         let tPassword = document.getElementById("password").value;
         let tKennitala = document.getElementById("kennitala").value;
 
-        tKiosk.login(tKennitala, tPassword)
-            .then(code => {
-                if (code === 200)
+        Kiosk.getSessionKiosk().login(tKennitala, tPassword)
+            .then(pCode => {
+                if (pCode === 200)
                 {
                     UIGoToPage("home");
                 }
             })
-            .catch(error => {
+            .catch(pError => {
                 if (pError.status)
                 {
                     debugger;

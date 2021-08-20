@@ -10,10 +10,12 @@
 <link rel="shortcut icon" href="#">
 
 <script type="text/javascript">
+    UIInitKiosk();
+    UIInitAutoLogout();
+
     addContGenFunction(function() {
-        let kiosk = initKopaKiosk();
         let tList = StackedList.createReturnList("itemlist");
-        kiosk.listBorrowedItems()
+        Kiosk.getSessionKiosk().listBorrowedItems()
             .then(pItems => {
                 if (pItems.length == 0)
                 {
@@ -43,7 +45,7 @@
     <div class="logout translate" id="header-logout">log-out</div>
 </div>
 
-<div class="title translate">return-screen</div>
+<div class="title translate">return</div>
 <div class="subtitle translate">maintenance-instr</div>
 
 <div id="itemlist"></div>
