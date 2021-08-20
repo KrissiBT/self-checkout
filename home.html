@@ -23,6 +23,13 @@
                         document.getElementById("return").remove();
                     }
 
+                    // Check whether a user can borrow, according to their
+                    // membership status
+                    if (!Kiosk.getSessionKiosk().userCanBorrow())
+                    {
+                        document.getElementById("borrow").remove();
+                    }
+
                     document.getElementById("buttons").style.visibility = "visible";
                 })
                 .catch(info => {
