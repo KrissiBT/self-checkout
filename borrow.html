@@ -14,9 +14,45 @@
 <script type="text/javascript">
     UIInitKiosk();
     UIInitAutoLogout();
+
+    let sSelectionCount = 0;
     
+    function selectionOccurred(pSelected)
+    {
+        if (pSelected)
+        {
+            ++sSelectionCount;
+        }
+        else
+        {
+            sSelectionCount--;
+        }
+
+        let tContinue = document.getElementById("continue");
+        
+        if (sSelectionCount > 0)
+        {
+            tContinue.classList.remove("deactivated");
+        }
+        else
+        {
+            tContinue.classList.add("deactivated");
+        }
+    }
+
+    function continueClick()
+    {
+        let tContinue = document.getElementById("continue");
+
+        if (!tContinue.classList.contains("deactivated"))
+        {
+            UIGoToPage("borrow_confirm");
+        }
+    }
+
     addContGenFunction(function() {
         let tList = GridList.createList("itemlist", "selected");
+        tList.addClickListener(selectionOccurred);
         
         Kiosk.getSessionKiosk().listItems()
             .then(pItems => {
@@ -55,7 +91,7 @@
 <div class="footer gray">
     <a href="home.html" class="left-link go-back translate">go-back</a>
     <div id="selected" class="translate">no-selected</div>
-    <a href="borrow_confirm.html" class="rounded-button green translate">continue</a>
+    <div id="continue" class="rounded-button green deactivated translate" onclick="continueClick()">continue</div>
 </div>
 
 </body>
