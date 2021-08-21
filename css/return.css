@@ -25,3 +25,16 @@
     left: 482px;
     top: 300px;
 }
+
+#selected
+{
+    width: 284px;
+    height: 25px;
+
+    text-align: right;
+    line-height: 25px;
+    top: 48px;
+    left: 1148px;
+
+    position: absolute;
+}

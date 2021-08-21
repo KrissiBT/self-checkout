@@ -208,7 +208,7 @@ a, a:visited
     cursor: pointer;
 }
 
-.rounded-button.deactivated:hover
+.rounded-button.disabled:hover
 {
     cursor: default;
 }
@@ -230,7 +230,7 @@ a, a:visited
     color: #232323;
 }
 
-.rounded-button.green.deactivated
+.rounded-button.green.disabled
 {
     background: #C8E8E7;
     color: #232323;
@@ -330,7 +330,6 @@ a, a:visited
     font-size: 20px;
     padding-left: 38px;
 
-    box-shadow: 0px 2px 10px rgba(101, 192, 237, 0.5);
     border-radius: 40px;
     font-family: Lexend-Deca;
 
@@ -340,6 +339,12 @@ a, a:visited
     vertical-align: middle;
 
     text-decoration: none;
+}
+
+.rounded-list .item.selected
+{
+    box-shadow: 0px 2px 10px rgba(101, 192, 237, 0.5);
+    border: 5px solid #c8e8e7;
 }
 
 .rounded-list .row .need-maintenance
@@ -360,10 +365,25 @@ a, a:visited
     color: #232323;
 }
 
+.rounded-list .row .need-maintenance
+{
+    color: #0E837A;
+    opacity: 0.2;
+}
+
 .rounded-list .selected .need-maintenance
 {
+    opacity: 1;
+}
+
+.rounded-list .selected .need-maintenance.switch-on
+{
     background-image: url(../img/switch_on.png);
-    color: #0E837A;
+}
+
+.rounded-list .selected .need-maintenance.switch-off
+{
+    background-image: url(../img/switch_off.png);
 }
 
 .rounded-list .row .locker

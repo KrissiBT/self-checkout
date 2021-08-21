@@ -14,7 +14,9 @@
     UIInitAutoLogout();
 
     addContGenFunction(function() {
-        let tList = StackedList.createReturnList("itemlist");
+        let tList = StackedList.createReturnList("itemlist", "selected");
+        tList.setAction("continue", function(){UIGoToPage("drop");});
+
         Kiosk.getSessionKiosk().listBorrowedItems()
             .then(pItems => {
                 if (pItems.length == 0)
@@ -25,7 +27,7 @@
                 {
                     for (let tItem of pItems)
                     {
-                        tList.addItem(tItem, true);
+                        tList.addItem(tItem);
                     }
                 }
             })
@@ -52,7 +54,8 @@
 
 <div class="footer gray">
     <a href="home.html" class="go-back left-link translate">go-back</a>
-    <a href="drop.html" class="rounded-button green translate ">continue</a>
+    <div id="selected" class="translate">no-selected</div>
+    <div id="continue" class="rounded-button green disabled translate">continue</div>
 </div>
 
 </body>

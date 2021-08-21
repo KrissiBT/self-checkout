@@ -986,18 +986,17 @@ class ItemList
 {
     static _instance = null;
 
-    constructor(pTarget, pCounterID = ""){
+    constructor(pTarget, pCounterID = "", pElementType){
         this._target = pTarget;
         this._counterID = pCounterID;
         this._itemCount = 0;
         this._selectedItems = {};
-        this._elements = {};
+        this._items = {};
         this._clickCallback = null;
-    }
-
-    static clearSelection()
-    {
-        Storage.store("selection", null);
+        this._actionCB = null;
+        this._actionButtonID = null;
+        this._storage = new Storage("munasafn.selection");
+        this._elementType = pElementType;
     }
 
     static getItemList()
@@ -1010,14 +1009,24 @@ class ItemList
         return ItemList._instance;
     }
 
-    static genId(pType, pID)
+    static genId(pID, pType)
     {
         return pType + "_" + pID;
     }
 
-    static getElementById(pType, pID)
+    static getIdFromElementID(pElemID, pElemType)
     {
-        return document.getElementById(ItemList.genId(pType, pID));
+        let tPrefix = pElemType + "_";
+        if (pElemID.startsWith(tPrefix) !== -1)
+        {
+            return pElemID.replace(tPrefix, "");
+        }
+        return pElemID;
+    }
+
+    static getElementById(pID, pType)
+    {
+        return document.getElementById(ItemList.genId(pID, pType));
     }
 
     _initSelection(pUseExistingSelection)
@@ -1026,7 +1035,7 @@ class ItemList
         {
             try
             {
-                let tSelection = Storage.fetch("selection");
+                let tSelection = this._storage.fetch("selection");
 
                 if (tSelection !== null)
                 {
@@ -1040,7 +1049,7 @@ class ItemList
         }
         else
         {
-            ItemList.clearSelection();
+            this._storage.clear();
         }
     }
 
@@ -1051,7 +1060,7 @@ class ItemList
 
     _updateSelection()
     {
-        Storage.store("selection", this._selectedItems);
+        this._storage.store("selection", this._selectedItems);
 
         try
         {
@@ -1061,31 +1070,71 @@ class ItemList
                         Translator.translate("selected", 
                             Object.keys(this._selectedItems).length);
             }
+
+            if (this._actionButtonID !== null)
+            {
+                // Enable / disabled action button according to selection state
+                let tActionButton = document.getElementById(this._actionButtonID);
+                
+                if (Object.keys(this._selectedItems).length > 0)
+                {
+                    tActionButton.classList.remove("disabled");
+                }
+                else
+                {
+                    tActionButton.classList.add("disabled");
+                }
+            }
         }
         catch (pErr){console.log(pErr);}
     }
 
-    addClickListener(pCallback)
+    _selectItem(pID, pType)
     {
-        this._clickCallback = pCallback;
-    }
-
-    _selectItem(pID)
-    {
-        let tElement = document.getElementById(pID);
-        this._selectedItems[pID] = this._elements[pID];
+        let tElement = ItemList.getElementById(pID, this._elementType);
+        this._selectedItems[pID] = this._items[pID];
         tElement.classList.add("selected");
 
         this._updateSelection();
     }
 
-    itemClicked(pID)
+    setAction(pElementID, pCallback)
     {
-        AutoLogout.recordInteraction();
+        let tActionButton = document.getElementById(pElementID);
 
+        if (tActionButton !== null)
+        {
+            this._actionButtonID = pElementID;
+            this._actionCB = pCallback;
+
+            tActionButton.addEventListener("click", function() {
+                if (!tActionButton.classList.contains("disabled"))
+                {
+                    ItemList.getItemList().executeAction();
+                }
+            });
+
+            this._updateSelection();
+        }
+    }
+
+    executeAction()
+    {
+        if (this._actionCB !== null)
+        {
+            this._actionCB();
+        }
+    }
+
+    elementClicked(pElementID, pElementType)
+    {
+        let tItemID = ItemList.getIdFromElementID(pElementID, pElementType);
+
+        AutoLogout.recordInteraction();
+        
         // Item in the selected list should be deselected
-        let tSelectItem = !(pID in this._selectedItems);
-        let tElement = document.getElementById(pID);
+        let tSelectItem = !(tItemID in this._selectedItems);
+        let tElement = document.getElementById(pElementID);
 
         if (tElement === null)
         {
@@ -1094,34 +1143,28 @@ class ItemList
 
         if (tSelectItem)
         {
-            this._selectedItems[pID] = this._elements[pID];
+            this._selectedItems[tItemID] = this._items[tItemID];
             tElement.classList.add("selected");
         }
         else
         {
-            delete this._selectedItems[pID];
+            delete this._selectedItems[tItemID];
             tElement.classList.remove("selected");
-        }
-
-        if (this._clickCallback !== null)
-        {
-            debugger;
-            this._clickCallback(tSelectItem);
         }
 
         this._updateSelection();
     }
 
-    addItem(pItem, pSelected = false)
+    addItem(pItem, pType, pSelected = false)
     {
         if (pItem["itemId"] !== null)
         {
-            this._elements[pItem["itemId"]] = pItem;
+            this._items[pItem["itemId"]] = pItem;
             this._itemCount++;
 
             if (pSelected)
             {
-                this._selectItem(pItem["itemId"]);
+                this._selectItem(pItem["itemId"], pType);
             }
         }
     }
@@ -1145,14 +1188,14 @@ class ItemList
 
     getItems()
     {
-        return this._elements;
+        return this._items;
     }
 
     getItem(pID)
     {
-        if (pID in this._elements)
+        if (pID in this._items)
         {
-            return this._elements[pID];
+            return this._items[pID];
         }
         else
         {
@@ -1191,7 +1234,7 @@ class GridList extends ItemList
 {
     constructor(pListElementID, pCounterID)
     {
-        super(pListElementID, pCounterID);
+        super(pListElementID, pCounterID, "item");
     }
 
     static createList(pListElementID, pCounterID = "", pUseSelection= false)
@@ -1204,6 +1247,22 @@ class GridList extends ItemList
         return tList;
     }
 
+    static handleClickEvent(event)
+    {
+        let tElement = event.target;
+        while(tElement !== null && tElement.id == "")
+        {
+            tElement = tElement.parentElement;
+        }
+
+        if (tElement != null)
+        {
+            let tList = ItemList.getItemList()
+
+            tList.elementClicked(tElement.id, "item");
+        }
+    }
+
     addItem(pItem, pSelected = false)
     {
         let tRow, tRowElement;
@@ -1212,22 +1271,9 @@ class GridList extends ItemList
         let tItemBox = document.createElement("div");
         tItemBox.classList.add("item");
         tItemBox.classList.add("col" + ((tCurrentItemCount % 4) + 1));
-
-        tItemBox.id = pItem["itemId"];
-        tItemBox.addEventListener("click",
-                function (event) {
-                    let tElement = event.target;
-                    while(tElement.id == "" && tElement != null)
-                    {
-                        tElement = tElement.parentElement;
-                    }
-
-                    if (tElement != null)
-                    {
-                        let tList = ItemList.getItemList()
-
-                        tList.itemClicked(tElement.id);
-                    }});
+        
+        tItemBox.id = ItemList.genId(pItem["itemId"], "item");
+        tItemBox.addEventListener("click", GridList.handleClickEvent);
 
         let tImage = document.createElement("img");
         tImage.classList.add("thumbnail");
@@ -1247,7 +1293,7 @@ class GridList extends ItemList
             tRow = Math.ceil(tCurrentItemCount / 4) + 1;
             tRowElement = document.createElement("div");
             tRowElement.classList.add("row");
-            tRowElement.id = ItemList.genId("row", tRow);
+            tRowElement.id = ItemList.genId(tRow, "row");
 
             tRowElement.append(tItemBox);
 
@@ -1260,7 +1306,7 @@ class GridList extends ItemList
         {
             tRow = Math.ceil(tCurrentItemCount / 4);
 
-            ItemList.getElementById("row", tRow).append(tItemBox);
+            ItemList.getElementById(tRow, "row").append(tItemBox);
         }
 
         super.addItem(pItem, pSelected);
@@ -1269,21 +1315,60 @@ class GridList extends ItemList
 
 class StackedList extends ItemList
 {
-    constructor(pListElementID, pCounterID)
+    constructor(pListElementID, pCounterID, pDefaultStyle)
     {
-        super(pListElementID, pCounterID);
+        super(pListElementID, pCounterID, "item");
         this._extraColumn = {class: "", header: ""};
         this._activeItemIndex = -1;
         this._idList = [];
         this._map = null;
+        this._defaultStyle = pDefaultStyle;
     }
 
-    static _createList(pListElementID, pCounterID = "")
+    static _createList(pListElementID, pCounterID = "", pDefaultStyle = "hollow-green")
     {
-        let tList = new StackedList(pListElementID, pCounterID);
+        let tList = new StackedList(pListElementID, pCounterID, pDefaultStyle);
         ItemList._instance = tList;
 
         return tList;
+    }
+
+    static handleClickEvent(event)
+    {
+        let tElement = event.target;
+        while(tElement !== null && tElement.id == "")
+        {
+            tElement = tElement.parentElement;
+        }
+
+        if (tElement === null)
+        {
+            return;
+        }
+
+        let tItemID = ItemList.getIdFromElementID(tElement.id, "item");
+
+        let tList = ItemList.getItemList();
+        tList.elementClicked(tElement.id, "item");
+
+        // Find the row element to add / remove selected
+        while (tElement !== null && 
+                    (tElement.id === "" || !tElement.classList.contains("row")))
+        {
+            tElement = tElement.parentElement;
+        }
+
+        if (tElement !== null)
+        {
+            if (tList.itemIsSelected(tItemID))
+            {
+                tElement.classList.add("selected");
+            }
+            else
+            {
+                tElement.classList.remove("selected");
+            }
+        }
     }
 
     addItem(pItem, pSelected = false)
@@ -1320,14 +1405,21 @@ class StackedList extends ItemList
         tCounter.innerHTML = (tItemCount + 1) + ".";
 
         let tEntry = document.createElement("div");
-        tEntry.classList.add("hollow-green");
+
+        if (this._defaultStyle !== null)
+        {
+            tEntry.classList.add(this._defaultStyle);
+        }
+
         tEntry.classList.add("item");
         tEntry.innerHTML = pItem["name"];
-        tEntry.id = pItem["itemId"];
+        tEntry.id = ItemList.genId(pItem["itemId"], "item");
+
+        tEntry.addEventListener("click", StackedList.handleClickEvent);
 
         let tRow = document.createElement("div");
         tRow.classList.add("row");
-        tRow.id = ItemList.genId("row", tItemCount);
+        tRow.id = ItemList.genId(tItemCount, "row");
 
         tRow.append(tCounter);
         tRow.append(tEntry);
@@ -1337,19 +1429,69 @@ class StackedList extends ItemList
             let tSwitchElem = document.createElement("div");
             tSwitchElem.classList.add(this._extraColumn.class);
             tSwitchElem.innerHTML = Translator.translate("no").toUpperCase();
+            tSwitchElem.id = ItemList.genId(pItem["itemId"], "switch")
 
             tSwitchElem.addEventListener("click", function (event) {
-                    let tElement = event.target;
-                    while(tElement.id == "" && tElement != null)
-                    {
-                        tElement = tElement.parentElement;
-                    }
+                let tElement = event.target;
+                let tID = ItemList.getIdFromElementID(tElement.id, "switch");
+                let tList = ItemList.getItemList();
 
-                    if (tElement != null)
+                // Ignore click if the item is not selected
+                if (!tList.itemIsSelected(tID))
+                {
+                    return;
+                }
+
+                // Was only needing maintenance if switch was on
+                // Flip the state
+                let tNeedMaintenance = !tElement.classList.contains("switch-on");
+
+                if (tNeedMaintenance)
+                {
+                    tElement.classList.remove("switch-off");
+                    tElement.classList.add("switch-on");
+                }
+                else
+                {
+                    tElement.classList.remove("switch-on");
+                    tElement.classList.add("swich-off");
+                }
+
+                let tText;
+                if (tNeedMaintenance)
+                {
+                    tText = "yes";
+                }
+                else
+                {
+                    tText = "no";
+                }
+
+                tElement.innerHTML = Translator.translate(tText).toUpperCase();
+
+                // Update the dictionary of items needing maintenance
+                if (tNeedMaintenance)
+                {
+                    if (!("data" in tList._extraColumn))
                     {
-                        AutoLogout.recordInteraction();
-                        ItemList.getItemList().itemClicked(tElement.id);
-                    }});
+                        let tData = {};
+                        tData[tID] = true;
+                        tList._extraColumn.data = tData;
+                    }
+                    else
+                    {
+                        tList._extraColumn.data[tID] = true;
+                    }
+                }
+                else
+                {
+                    delete tList._extraColumn.data[tID];
+                }
+
+                tList._extraColumn._storage.store("selection", tList._extraColumn.data);
+
+                AutoLogout.recordInteraction();
+            });
 
             tRow.append(tSwitchElem);
         }
@@ -1357,7 +1499,7 @@ class StackedList extends ItemList
         {
             let tTextElem = document.createElement("div");
             tTextElem.classList.add(this._extraColumn.class);
-            tTextElem.id = ItemList.genId("locker", pItem["itemId"]);
+            tTextElem.id = ItemList.genId(pItem["itemId"], "locker");
 
             tRow.append(tTextElem);
         }
@@ -1367,41 +1509,17 @@ class StackedList extends ItemList
         super.addItem(pItem, pSelected);
     }
 
-    itemClicked(pID)
+    static getExtraStorage(pExtraClass)
     {
-        if (this._extraColumn.class === "need-maintenance")
-        {
-            let tText;
-            if (!(pID in this._selectedItems))
-            {
-                tText = "yes";
-            }
-            else
-            {
-                tText = "no";
-            }
-
-            let tElement = document.getElementById(pID);
-
-            if (tElement === null)
-            {
-                return;
-            }
-
-            let tSwitch = tElement.getElementsByClassName(this._extraColumn.class);
-            if (tSwitch !== null && tSwitch.length == 1)
-            {
-                tSwitch[0].innerHTML = Translator.translate(tText).toUpperCase();
-            }
-        }
-
-        super.itemClicked(pID);
+        return new Storage("munasafn." + pExtraClass);
     }
 
     _addColumn(pClass, pHeaderText)
     {
         this._extraColumn = {class: pClass, header:pHeaderText};
         this._updateHeader();
+        this._extraColumn._storage = StackedList.getExtraStorage(pClass);
+        this._extraColumn._storage.clear();
     }
 
     _changeColumnHeader(pHeader)
@@ -1468,7 +1586,7 @@ class StackedList extends ItemList
         if (tFormerIndex != -1)
         {
             let tFormerID = this._getItemId(tFormerIndex);
-            let tFormerlyActive = document.getElementById(tFormerID);
+            let tFormerlyActive = ItemList.getElementById(tFormerID, "item");
 
             if (tFormerlyActive !== null)
             {
@@ -1476,7 +1594,7 @@ class StackedList extends ItemList
                 tFormerlyActive.classList.add("hollow-gray");
             }
 
-            let tFormerInstructions = ItemList.getElementById("locker", tFormerID);
+            let tFormerInstructions = ItemList.getElementById(tFormerID, "locker");
             tFormerInstructions.classList.remove("item-active");
             if (tFormerInstructions !== null)
             {
@@ -1491,8 +1609,8 @@ class StackedList extends ItemList
         }
 
         let tItemID = this._getItemId(tNewIndex);
-        let tDomElem = document.getElementById(tItemID);
-        let tInstructionsDiv = ItemList.getElementById("locker", tItemID);
+        let tDomElem = ItemList.getElementById(tItemID, "item");
+        let tInstructionsDiv = ItemList.getElementById(tItemID, "locker");
         if (tDomElem === null || tItemID === -1)
         {
             debugger;
@@ -1502,6 +1620,7 @@ class StackedList extends ItemList
         // Mark item as active
         let tDoorID = this._findDoorID(tItemID);
         tDomElem.classList.add("hollow-green");
+        tDomElem.classList.remove("hollow-gray");
 
         // Create instruction elements
         if (tInstructionsDiv === null)
@@ -1546,7 +1665,7 @@ class StackedList extends ItemList
 
     static createLockerList(pListElementID, pCounterID = "", pUseSelection = true)
     {
-        let tList = StackedList._createList(pListElementID, pCounterID);
+        let tList = StackedList._createList(pListElementID, pCounterID, "hollow-gray");
         tList._addColumn("locker", "");
 
         tList._initSelection(pUseSelection);
@@ -1556,7 +1675,7 @@ class StackedList extends ItemList
 
     static createReturnList(pListElementID, pCounterID = "", pUseSelection = false)
     {
-        let tItemList = StackedList._createList(pListElementID, "");
+        let tItemList = StackedList._createList(pListElementID, pCounterID, "hollow-gray");
         tItemList._addColumn("need-maintenance", "need-maintenance");
 
         tItemList._initSelection(pUseSelection);
