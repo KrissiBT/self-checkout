@@ -208,6 +208,11 @@ a, a:visited
     cursor: pointer;
 }
 
+.rounded-button.deactivated:hover
+{
+    cursor: default;
+}
+
 .rounded-button.yellow
 {
     background: #ffcb41;
@@ -222,6 +227,12 @@ a, a:visited
 .rounded-button.green
 {
     background: #38c0b6;
+    color: #232323;
+}
+
+.rounded-button.green.deactivated
+{
+    background: #C8E8E7;
     color: #232323;
 }
 
@@ -531,7 +542,6 @@ input:focus
 {
     position: absolute;
     left: 1492px;
-    background: #38C0B6;
 
     border-radius: 30px;
     height: 60px;
