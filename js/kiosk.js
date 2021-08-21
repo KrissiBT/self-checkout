@@ -992,6 +992,7 @@ class ItemList
         this._itemCount = 0;
         this._selectedItems = {};
         this._elements = {};
+        this._clickCallback = null;
     }
 
     static clearSelection()
@@ -1064,6 +1065,11 @@ class ItemList
         catch (pErr){console.log(pErr);}
     }
 
+    addClickListener(pCallback)
+    {
+        this._clickCallback = pCallback;
+    }
+
     _selectItem(pID)
     {
         let tElement = document.getElementById(pID);
@@ -1095,6 +1101,12 @@ class ItemList
         {
             delete this._selectedItems[pID];
             tElement.classList.remove("selected");
+        }
+
+        if (this._clickCallback !== null)
+        {
+            debugger;
+            this._clickCallback(tSelectItem);
         }
 
         this._updateSelection();
